@@ -1,11 +1,6 @@
 import math
 from PIL import Image, ImageDraw
 
-def pol2cart(r, theta):
-    x = r * math.cos(theta)
-    y = r * math.sin(theta)
-    return x, y
-
 class MathLogo:
 
     def __init__(self, img):
@@ -20,7 +15,7 @@ class MathLogo:
 
 class Rose(MathLogo):
     
-    def __init__(self, img, x, y, r, leafcnt, color=255):
+    def __init__(self, img, x, y, r, leafcnt, color=(255, 255, 255)):
         super().__init__(img)
         self.x = x
         self.y = y
@@ -30,9 +25,13 @@ class Rose(MathLogo):
 
 
     def __rose_calc(self, degrees):
-        rad = math.degrees(degrees)
-        x, y = pol2cart(self.r, math.cos(self.leaves * rad))
-        return x + self.x, y + self.y
+        rad = math.radians(degrees)
+        faktor = math.cos(self.leaves * rad)
+        
+        x = self.r * faktor * math.cos(rad) + self.x
+        y = self.r * faktor * math.sin(rad) + self.y
+        return x, y
+
 
     def rose(self):
         prevx, prevy = self.__rose_calc(0)
