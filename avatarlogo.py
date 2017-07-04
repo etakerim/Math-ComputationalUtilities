@@ -2,8 +2,8 @@ import math
 from PIL import Image, ImageDraw
 
 def pol2cart(r, theta):
-    x = r * cos(theta)
-    y = r * sin(theta)
+    x = r * math.cos(theta)
+    y = r * math.sin(theta)
     return x, y
 
 class MathLogo:
@@ -15,12 +15,12 @@ class MathLogo:
 
 
     def save(self, filename):
-        self.img.save(filename, filename.rpartition('.').upper())
+        self.img.save(filename, filename.rpartition('.')[-1].upper())
 
 
 class Rose(MathLogo):
     
-    def __init__(self, x, y, r, leafcnt, color=(255, 255, 255)):
+    def __init__(self, img, x, y, r, leafcnt, color=255):
         super().__init__(img)
         self.x = x
         self.y = y
@@ -39,9 +39,16 @@ class Rose(MathLogo):
         
         for angle in range(360):
             x, y = self.__rose_calc(angle)
-            self.canvas.line((prevx, prevy), (x, y), fill=rgb)
+            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
             prevx, prevy = x, y
 
+
+if __name__ == '__main__':
+
+    ico = Image.new('RGB', (640, 480))
+    drawing = Rose(ico, ico.size[0] / 2, ico.size[1] / 2, 100, 4)
+    drawing.rose()
+    drawing.save('icon.png')
 
 #def koch_snowflake(self):
 #canvas.line((0, 0) + img.size, fill=255)
