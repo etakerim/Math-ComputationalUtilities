@@ -1,6 +1,13 @@
+"""
+Questions:
+    1. Must you commit before branch merge
+    2. Handle many arguments to member function better
+    3. Similar function shared by two classes rose, lissajous
+"""
 import math
 from PIL import Image, ImageDraw
 
+WHITE_RGB = (255, 255, 255)
 
 class MathLogo:
 
@@ -15,7 +22,7 @@ class MathLogo:
 
 class Rose(MathLogo):
 
-    def __init__(self, img, x, y, r, leafcnt, color=(255, 255, 255)):
+    def __init__(self, img, x, y, r, leafcnt, color=WHITE_RGB):
         super().__init__(img)
         self.x = x
         self.y = y
@@ -30,7 +37,7 @@ class Rose(MathLogo):
         y = self.r * faktor * math.sin(rad) + self.y
         return x, y
 
-    def rose(self):
+    def draw(self):
         prevx, prevy = self.__rose_calc(0)
         
         for angle in range(360):
@@ -39,8 +46,26 @@ class Rose(MathLogo):
             prevx, prevy = x, y
 
 
-if __name__ == '__main__':
+class Lissajous(MathLogo):
 
+    def __init__(self, img, x, y, a, b, color=WHITE_RGB):
+        super().__init__(img)
+        self.x = x
+        self.y = y
+        self.a = a
+        self.b = b
+        self.rgb = color
+
+    def draw(self):
+        prevx, prevy = self.__lissajous_calc(0)
+
+        for angle in range(360):
+            x, y = self.__lissajous_calc(angle)
+            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
+            prevx, prevy = x, y
+
+
+if __name__ == '__main__':
     ico = Image.new('RGB', (500, 500))
     drawing = Rose(ico, ico.size[0] / 2, ico.size[1] / 2, 200, 4)
     drawing.rose()
