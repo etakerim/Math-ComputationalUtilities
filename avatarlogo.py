@@ -12,8 +12,11 @@ class MathLogo:
         self.img.save(filename, filename.rpartition('.').upper())
 
 
-    def __rose_calc(self, degrees):
-        pass
+    def __rose_calc(self, k ,degrees):
+        rad = math.degrees(degrees)
+        x = math.cos(k * rad) * math.cos(rad)
+        y = math.cos(k * rad) * math.sin(rad)
+        return x, y
 
 
     def rose(self, x, y, r, leafcnt, rgb=(255, 255, 255)):
