@@ -48,13 +48,25 @@ class Rose(MathLogo):
 
 class Lissajous(MathLogo):
 
-    def __init__(self, img, x, y, a, b, color=WHITE_RGB):
+    def __init__(self, img, 
+        x, y, a_amp, b_amp, a, b, delta,
+        color=WHITE_RGB):
+
         super().__init__(img)
         self.x = x
         self.y = y
+        self.a_amp = a_amp
+        self.b_amp = b_amp
+        self.delta = delta
         self.a = a
         self.b = b
         self.rgb = color
+
+    def __lissajous_calc(self, degrees):
+        rad = math.radians(degrees)
+        x = self.a_amp * math.sin(self.a * rad + self.delta)
+        y = self.b_amp * math.sin(self.b * rad)
+        return x, y
 
     def draw(self):
         prevx, prevy = self.__lissajous_calc(0)
