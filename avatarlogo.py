@@ -31,8 +31,8 @@ class Rose(MathLogo):
 
     def __rose_calc(self, degrees):
         rad = math.degrees(degrees)
-        return pol2cart(self.r, math.cos(self.leaves * rad))
-
+        x, y = pol2cart(self.r, math.cos(self.leaves * rad))
+        return x + self.x, y + self.y
 
     def rose(self):
         prevx, prevy = self.__rose_calc(0)
