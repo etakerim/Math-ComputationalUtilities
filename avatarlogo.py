@@ -20,7 +20,7 @@ class MathLogo:
         self.canvas = ImageDraw.Draw(self.img)
         return self.canvas
 
-    def __exit__(self):
+    def __exit__(self, *args):
         self.img.save(
                 self.filename, 
                 self.filename.rpartition('.')[-1].upper()
@@ -62,7 +62,7 @@ class Lissajous():
         self.pos = pos
         self.a_amp = a_amp
         self.b_amp = b_amp
-        self.delta = delta
+        self.delta = math.radians(delta)
         self.a = a
         self.b = b
         self.rgb = color
@@ -76,18 +76,22 @@ class Lissajous():
     def draw(self):
         prevx, prevy = self.__lissajous_calc(0)
 
-        for angle in range(360):
+        for angle in range(362):
             x, y = self.__lissajous_calc(angle)
             self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
             prevx, prevy = x, y
 
 
 if __name__ == '__main__':
-    
-    with MathLogo(Image.new('RGB', (500, 500)), 'image.png') as ico:
-        center = (500 / 2, 500 / 2)
-        rose = Rose(ico, center, r=200, leafcnt=4)
+    IMG_SIZE = (1000, 500)
+
+    with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
+        #center = (500 / 2, 500 / 2)
+        rose = Rose(ico, (250, 250), r=200, leafcnt=4)
         rose.draw()
+        lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180)
+        lissaj.draw()
+
     
     
 #def koch_snowflake(self):
