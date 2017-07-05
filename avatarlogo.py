@@ -108,7 +108,7 @@ class KochFractal():
         self.curve(divpoints[1], divpoints[1] + c)
         
         c = middlelen.rotate(math.radians(-60))
-        self.curve(divpoints[2] + c, divpoints[2]) 
+        self.curve(divpoints[2] - c, divpoints[2]) 
        
         self.curve(divpoints[2], divpoints[3])
 
