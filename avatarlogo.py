@@ -88,23 +88,39 @@ class Lissajous():
 
 class KochFractal():
 
-    def __init__(self, x, y, length):
-        self.a = Vector2D(x, y)
-        self.b = Vector2D(x + length, y)
+    def __init__(self, canvas, color=WHITE_RGB):
+        self.canvas = canvas
+        self.rgb = color
 
-    def curve(self):
-        pass
+    def curve(self, a, b):
+        if abs(b - a) < 3:
+            self.canvas.line(a.data + b.data, fill=self.rgb)
+            return
+        
+        divpoints = [a]
+        for faktor in range(1, 4):
+            divpoints.append(a + faktor * ((b - a) / 3))
+        
+        self.curve(divpoints[0], divpoints[1]) 
+        
+        middlelen = divpoints[2] - divpoints[1]
+        c = middlelen.rotate(math.radians(60))
+        self.curve(divpoints[1], divpoints[1] + c)
+        
+        c = middlelen.rotate(math.radians(-60))
+        self.curve(divpoints[2] + c, divpoints[2]) 
+       
+        self.curve(divpoints[2], divpoints[3])
+
 
 if __name__ == '__main__':
     IMG_SIZE = (1000, 500)
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         #center = (500 / 2, 500 / 2)
-        rose = Rose(ico, (250, 250), r=200, leafcnt=4)
-        rose.draw()
-        lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180)
-        lissaj.draw()
-
+        rose = Rose(ico, (250, 250), r=200, leafcnt=4).draw()
+        #lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180).draw()
+        k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
     
     
 #def koch_snowflake(self):
