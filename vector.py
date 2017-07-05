@@ -16,19 +16,21 @@ class Vector2D:
         y = self.y - other.y
         return Vector2D(x, y)
 
-    def __mul__(self, other):
-        if isinstance(other, Vector2D):
-            return self.x * other.x + self.y * other.y
-
-        elif isinstance(other, int) or isinstance(other, float):
-            x = self.x * other
-            y = self.y * other
-            return Vector2D(x, y)
-        else:
-            raise TypeError("Unsupported operand types")
-
+    def __mul__(self, scalar):
+        x = self.x * scalar
+        y = self.y * scalar
+        return Vector2D(x, y)
+    
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __truediv__(self, scalar):
+        x = self.x / scalar
+        y = self.y / scalar
+        return Vector2D(x, y)
+
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y
 
     def __abs__(self):
         return math.hypot(self.x, self.y)
