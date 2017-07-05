@@ -34,7 +34,10 @@ class Rose():
         self.canvas = canvas
         self.pos = pos
         self.r = r
-        self.leaves = leafcnt
+        if leafcnt % 2 == 0:
+            self.leaves = leafcnt / 2
+        else:
+            self.leaves = leafcnt
         self.rgb = color
 
     def __rose_calc(self, degrees):
@@ -77,7 +80,7 @@ class Lissajous():
     def draw(self):
         prevx, prevy = self.__lissajous_calc(-1)
 
-        for angle in range(362):
+        for angle in range(360):
             x, y = self.__lissajous_calc(angle)
             self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
             prevx, prevy = x, y
