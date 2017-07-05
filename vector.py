@@ -30,20 +30,6 @@ class Vector2D:
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    def __truediv__(self, other):
-        if isinstance(other, Vector2D):
-            x = self.x / other.x
-            y = self.y / other.y
-        elif isinstance(other, int) or isinstance(other, float):
-            x = self.x * other
-            y = self.y * other
-        else:
-            raise TypeError("Unsupported operand types")
-        return Vector2D(x, y)
-
-    def __rtruediv__(self, other):
-        return self.__truediv__(other)
-
     def __repr__(self):
         return ("Vector2D (x={}, y={})".format(self.x, self.y))
 
