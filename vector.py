@@ -50,13 +50,5 @@ class Vector2D:
     def is_perpendicular(self, other):
         return self.__mul__(other) == 0
     @property
-    def x(self):
-        return self.x
-
-    @property
-    def y(self):
-        return self.y
-
-    @property
     def data(self):
         return (self.x, self.y)
