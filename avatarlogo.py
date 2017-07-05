@@ -7,6 +7,7 @@ Questions:
 """
 import math
 from PIL import Image, ImageDraw
+from vector import Vector2D
 
 WHITE_RGB = (255, 255, 255)
 
@@ -44,7 +45,7 @@ class Rose():
         return x, y
 
     def draw(self):
-        prevx, prevy = self.__rose_calc(0)
+        prevx, prevy = self.__rose_calc(-1)
         
         for angle in range(360):
             x, y = self.__rose_calc(angle)
@@ -74,13 +75,22 @@ class Lissajous():
         return x, y
 
     def draw(self):
-        prevx, prevy = self.__lissajous_calc(0)
+        prevx, prevy = self.__lissajous_calc(-1)
 
         for angle in range(362):
             x, y = self.__lissajous_calc(angle)
             self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
             prevx, prevy = x, y
 
+
+class KochFractal():
+
+    def __init__(self, x, y, length):
+        self.a = Vector2D(x, y)
+        self.b = Vector2D(x + length, y)
+
+    def curve(self):
+        pass
 
 if __name__ == '__main__':
     IMG_SIZE = (1000, 500)
