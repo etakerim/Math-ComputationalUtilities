@@ -39,7 +39,7 @@ class Vector2D:
         return ("Vector2D(x={:.2f}, y={:.2f})".format(self.x, self.y))
 
     def angle(self, other):
-        return math.acos(self.__mul__(other) 
+        return math.acos(self.dot(other) 
                          / (self.__abs__() * other.__abs__()))
 
     def rotate(self, angle):
