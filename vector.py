@@ -18,23 +18,52 @@ class Vector2D:
 
     def __mul__(self, other):
         if isinstance(other, Vector2D):
-            x = self.x * other.x
-            y = self.y * other.y
-        elif isinstance(other, int):
+            return self.x * other.x + self.y * other.y
+
+        elif isinstance(other, int) or isinstance(other, float):
+            x = self.x * other
+            y = self.y * other
+            return Vector2D(x, y)
+        else:
+            raise TypeError("Unsupported operand types")
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, other):
+        if isinstance(other, Vector2D):
+            x = self.x / other.x
+            y = self.y / other.y
+        elif isinstance(other, int) or isinstance(other, float):
             x = self.x * other
             y = self.y * other
         else:
             raise TypeError("Unsupported operand types")
         return Vector2D(x, y)
 
-    def __rmul__(self, other):
-        return self.__mul__(other)
+    def __rtruediv__(self, other):
+        return self.__truediv__(other)
 
     def __repr__(self):
         return ("Vector2D (x={}, y={})".format(self.x, self.y))
 
+    def __abs__(self):
+        return math.hypot(self.x, self.y)
+
+    def angle(self, other):
+        return math.acos(self.__mul__(other) 
+                / (self.__abs__() * other.__abs__()))
+
+    def is_perpendicular(self, other):
+        return self.__mul__(other) == 0
+
+
 if __name__ == '__main__':
-    print(Vector2D(4, 2) + Vector2D(2, 3))
-    print(Vector2D(4, 2) - Vector2D(2, 3))
-    print(Vector2D(4, 2) * 2)
-    print(Vector2D(4, 2) * Vector2D(2, 2))
+    A = Vector2D(4, 2)
+    print(A + Vector2D(2, 3))
+    print(A - Vector2D(2, 3))
+    print(A * 2.55)
+    print(A * Vector2D(5, 2))
+    print(abs(A))
+    print(Vector2D(1, 6).angle(A))
+    print(Vector2D(0, 5).is_perpendicular(Vector2D(5, 0)))
