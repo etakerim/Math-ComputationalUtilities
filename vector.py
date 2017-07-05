@@ -16,17 +16,25 @@ class Vector2D:
         y = self.y - other.y
         return Vector2D(x, y)
 
-    def __rmul__(self, other):
+    def __mul__(self, other):
         if isinstance(other, Vector2D):
             x = self.x * other.x
             y = self.y * other.y
-        else isinstance(other, int):
+        elif isinstance(other, int):
             x = self.x * other
             y = self.y * other
+        else:
+            raise TypeError("Unsupported operand types")
         return Vector2D(x, y)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __repr__(self):
         return ("Vector2D (x={}, y={})".format(self.x, self.y))
 
-
-print(Vector2D(4, 2) + Vector2D(2, 3))
+if __name__ == '__main__':
+    print(Vector2D(4, 2) + Vector2D(2, 3))
+    print(Vector2D(4, 2) - Vector2D(2, 3))
+    print(Vector2D(4, 2) * 2)
+    print(Vector2D(4, 2) * Vector2D(2, 2))
