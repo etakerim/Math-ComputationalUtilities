@@ -1,10 +1,3 @@
-"""
-Questions:
-    1. Must you commit before branch merge
-    2. Handle many arguments to member function better
-    3. Similar function shared by two classes rose, lissajous
-    4. Changes of unexpected manner and git
-"""
 import math
 from PIL import Image, ImageDraw
 from vector import Vector2D
@@ -27,9 +20,16 @@ class MathLogo:
                 self.filename.rpartition('.')[-1].upper()
                 )
 
+class PeriodicMathFunc():
+    def period_draw(self, mfunc):
+        prevx, prevy = mfunc(-1)
 
-class Rose():
+        for angle in range(360):
+            x, y = mfunc(angle)
+            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
+            prevx, prevy = x, y
 
+class Rose(PeriodicMathFunc):
     def __init__(self, canvas, pos, r, leafcnt, color=WHITE_RGB):
         self.canvas = canvas
         self.pos = pos
@@ -48,16 +48,9 @@ class Rose():
         return x, y
 
     def draw(self):
-        prevx, prevy = self.__rose_calc(-1)
-        
-        for angle in range(360):
-            x, y = self.__rose_calc(angle)
-            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
-            prevx, prevy = x, y
+        self.period_draw(self.__rose_calc)
 
-
-class Lissajous():
-
+class Lissajous(PeriodicMathFunc):
     def __init__(self, canvas, 
         pos, a_amp, b_amp, a, b, delta,
         color=WHITE_RGB):
@@ -78,16 +71,9 @@ class Lissajous():
         return x, y
 
     def draw(self):
-        prevx, prevy = self.__lissajous_calc(-1)
-
-        for angle in range(360):
-            x, y = self.__lissajous_calc(angle)
-            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
-            prevx, prevy = x, y
-
+       self.period_draw(self.__lissajous_calc) 
 
 class KochFractal():
-
     def __init__(self, canvas, color=WHITE_RGB):
         self.canvas = canvas
         self.rgb = color
