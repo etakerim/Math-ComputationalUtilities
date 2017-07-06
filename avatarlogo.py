@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 from vector import Vector2D
 
 WHITE_RGB = (255, 255, 255)
-
+GREEN_RGB = (0,   255,   0)
 
 class MathLogo:
 
@@ -117,25 +117,31 @@ class KochFractal():
 
 
 class FractalTree():
-    def __init__(self, canvas, factor, angle, isgrowdown=False, color=WHITE_RGB):
+    def __init__(self, canvas, factor, angle, areleaves=False, isgrowdown=False,
+                 color=WHITE_RGB, leafcolor=GREEN_RGB):
         self.canvas = canvas
         self.factor = factor
         self.angle = angle
         self.isgrowdown = isgrowdown 
+        self.areleaves = areleaves
         self.rgb = color
+        self.leafrgb = leafcolor 
 
 
     def __branch(self, a, b, l):
         if l == 0 or abs(b - a) < 2:
+            if self.areleaves:
+                self.canvas.ellipse(b.data + (b + Vector2D(5, 5)).data,
+                                    self.leafrgb)
             return
-        c = (b - a) * self.factor
-        
-        a = math.pi
-        if self.isgrowdown:
-            a = 0
 
-        b1 = b - c.rotate(self.angle + a)
-        b2 = b - c.rotate(-self.angle + a)
+        dirangle = math.pi
+        if self.isgrowdown:
+            dirangle = 0
+
+        c = (b - a) * self.factor
+        b1 = b - c.rotate(self.angle + dirangle)
+        b2 = b - c.rotate(-self.angle + dirangle)
 
         self.canvas.line(b.data + b1.data, self.rgb)
         self.__branch(b, b1, l - 1)
@@ -157,7 +163,7 @@ if __name__ == '__main__':
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         #center = (500 / 2, 500 / 2)
         #rose = Rose(ico, (250, 250), r=200, leafcnt=4).draw()
-        f = FractalTree(ico, 0.60, math.radians(30)).tree(250, 500, 100, 20) 
+        f = FractalTree(ico, 0.60, math.radians(30), areleaves=True).tree(250, 500, 100, 20) 
         k = KochFractal(ico).snowflake(750, 250, 200)
         #lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180).draw()
         #k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
