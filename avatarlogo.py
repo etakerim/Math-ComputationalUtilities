@@ -98,6 +98,19 @@ class KochFractal():
        
         self.curve(divpoints[2], divpoints[3])
 
+    def snowflake(self, x, y, r):
+        center = Vector2D(x, y)
+        radius = Vector2D(r, 0)
+
+        points = [
+                  center + radius.rotate(math.radians(-45)),
+                  center + radius.rotate(math.radians(90)),
+                  center + radius.rotate(math.radians(-135))
+                 ]
+
+        self.curve(points[0], points[2]) 
+        self.curve(points[1], points[0])
+        self.curve(points[2], points[1])
 
 if __name__ == '__main__':
     IMG_SIZE = (1000, 500)
@@ -106,8 +119,8 @@ if __name__ == '__main__':
         #center = (500 / 2, 500 / 2)
         rose = Rose(ico, (250, 250), r=200, leafcnt=4).draw()
         #lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180).draw()
-        k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
-    
+        #k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
+        k = KochFractal(ico).snowflake(750, 250, 200)
     
 #def koch_snowflake(self):
 #canvas.line((0, 0) + img.size, fill=255)
