@@ -54,7 +54,7 @@ class Rose(PeriodicMathFunc):
 
 class Lissajous(PeriodicMathFunc):
     def __init__(self, canvas, 
-                 pos, a_amp, b_amp, a, b, delta,
+                 pos, a_amp, b_amp, a=5, b=4, delta=math.pi,
                  color=WHITE_RGB):
 
         self.canvas = canvas
@@ -162,13 +162,14 @@ class FractalTree():
 
 
 if __name__ == '__main__':
-    IMG_SIZE = (1000, 500)
+    IMG_SIZE = (600, 500)
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
-        #center = (500 / 2, 500 / 2)
-        #rose = Rose(ico, (250, 250), r=200, leafcnt=4).draw()
-        f = FractalTree(ico, 0.60, math.radians(30), areleaves=True).tree(250, 500, 100, 20) 
-        k = KochFractal(ico).snowflake(750, 250, 200)
-        #lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180).draw()
-        #k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
-        #canvas.line((0, 0) + img.size, fill=255)
+        center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2 + 10)
+        treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
+        
+        KochFractal(ico).snowflake(*center, 220)
+        FractalTree(ico, 0.60, math.radians(35), areleaves=True).tree(*treebase, 80, 20)
+        Lissajous(ico, treebase, 30, 30).draw()
+        Rose(ico, (180, treebase[1] - 20), 30, 8).draw()
+        Rose(ico, (420, treebase[1] - 20), 30, 8).draw()
