@@ -117,27 +117,38 @@ class KochFractal():
 
 
 class FractalTree():
-    def __init__(self, canvas, factor, angle, color=WHITE_RGB):
+    def __init__(self, canvas, factor, angle, isgrowdown=False, color=WHITE_RGB):
         self.canvas = canvas
         self.factor = factor
         self.angle = angle
+        self.isgrowdown = isgrowdown 
         self.rgb = color
 
-    def __branch(self, a, b):
-        if abs(b - a) < 2:
+
+    def __branch(self, a, b, l):
+        if l == 0 or abs(b - a) < 2:
             return
         c = (b - a) * self.factor
-        b1 = a + c.rotate(self.angle)
-        b2 = a + c.rotate(math.radians(-self.angle) + self.angle)
+        
+        a = math.pi
+        if self.isgrowdown:
+            a = 0
 
-        self.canvas.line(a.data + b1.data, self.rgb)
-        self.__branch(a, b1)
-        self.canvas.line(a.data + b2.data, self.rgb)
-        self.__branch(b, b2)
+        b1 = b - c.rotate(self.angle + a)
+        b2 = b - c.rotate(-self.angle + a)
 
-    def tree(self, x, y, rootheight):
-        self.canvas.line((x, y, x, y + rootheight), self.rgb)
-        self.__branch(Vector2D(x, y), Vector2D(x, y + rootheight))
+        self.canvas.line(b.data + b1.data, self.rgb)
+        self.__branch(b, b1, l - 1)
+        self.canvas.line(b.data + b2.data, self.rgb)
+        self.__branch(b, b2, l - 1)
+
+
+    def tree(self, x, y, rootheight, depth):
+        y2 = y - rootheight
+        if self.isgrowdown:
+            y2 = y + rootheight
+        self.canvas.line((x, y, x, y - rootheight), self.rgb) 
+        self.__branch(Vector2D(x, y), Vector2D(x, y - rootheight), depth)
 
 
 if __name__ == '__main__':
@@ -146,7 +157,7 @@ if __name__ == '__main__':
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         #center = (500 / 2, 500 / 2)
         #rose = Rose(ico, (250, 250), r=200, leafcnt=4).draw()
-        f = FractalTree(ico, 0.68, math.radians(45)).tree(250, 0, 50) 
+        f = FractalTree(ico, 0.60, math.radians(30)).tree(250, 500, 100, 20) 
         k = KochFractal(ico).snowflake(750, 250, 200)
         #lissaj = Lissajous(ico, (750, 250), 100, 100, 5, 4, 180).draw()
         #k = KochFractal(ico).curve(Vector2D(600, 250), Vector2D(900, 250)) 
