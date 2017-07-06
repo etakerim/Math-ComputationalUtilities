@@ -117,22 +117,26 @@ class KochFractal():
 
 
 class FractalTree():
-    def __init__(self, canvas, factor, angle, areleaves=False, isgrowdown=False,
-                 color=WHITE_RGB, leafcolor=GREEN_RGB):
+    def __init__(self, canvas, factor, angle, areleaves=False, leafsize=5, 
+                isgrowdown=False, color=WHITE_RGB, 
+                leaffill=GREEN_RGB, leafoutline=GREEN_RGB):
         self.canvas = canvas
         self.factor = factor
         self.angle = angle
         self.isgrowdown = isgrowdown 
+        self.leafsize = leafsize
         self.areleaves = areleaves
         self.rgb = color
-        self.leafrgb = leafcolor 
+        self.leaffill = leaffill
+        self.leafoutline = leafoutline
 
 
     def __branch(self, a, b, l):
         if l == 0 or abs(b - a) < 2:
             if self.areleaves:
-                self.canvas.ellipse(b.data + (b + Vector2D(5, 5)).data,
-                                    self.leafrgb)
+                self.canvas.ellipse(b.data + (b + Vector2D(self.leafsize, 
+                                    self.leafsize)).data, fill=self.leaffill,
+                                    outline=self.leafoutline)
             return
 
         dirangle = math.pi
