@@ -26,12 +26,13 @@ class PeriodicMathFunc():
 
         for angle in range(360):
             x, y = mfunc(angle)
-            self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
+            self.canvas.line((prevx, prevy, x, y), 
+                            fill=self.rgb, width=self.lwidth)
             prevx, prevy = x, y
 
 
 class Rose(PeriodicMathFunc):
-    def __init__(self, canvas, pos, r, leafcnt, color=WHITE_RGB):
+    def __init__(self, canvas, pos, r, leafcnt, lwidth=1, color=WHITE_RGB):
         self.canvas = canvas
         self.pos = pos
         self.r = r
@@ -39,6 +40,7 @@ class Rose(PeriodicMathFunc):
             self.leaves = leafcnt / 2
         else:
             self.leaves = leafcnt
+        self.lwidth = lwidth
         self.rgb = color
 
     def __rose_calc(self, degrees):
@@ -55,7 +57,7 @@ class Rose(PeriodicMathFunc):
 class Lissajous(PeriodicMathFunc):
     def __init__(self, canvas, 
                  pos, a_amp, b_amp, a=5, b=4, delta=math.pi,
-                 color=WHITE_RGB):
+                 lwidth=1, color=WHITE_RGB):
 
         self.canvas = canvas
         self.pos = pos
@@ -64,6 +66,7 @@ class Lissajous(PeriodicMathFunc):
         self.delta = math.radians(delta)
         self.a = a
         self.b = b
+        self.lwidth = lwidth
         self.rgb = color
 
     def __lissajous_calc(self, degrees):
@@ -77,13 +80,14 @@ class Lissajous(PeriodicMathFunc):
 
 
 class KochFractal():
-    def __init__(self, canvas, color=WHITE_RGB):
+    def __init__(self, canvas, lwidth=1, color=WHITE_RGB):
         self.canvas = canvas
+        self.lwidth = lwidth
         self.rgb = color
 
     def curve(self, a, b):
         if abs(b - a) < 3:
-            self.canvas.line(a.data + b.data, fill=self.rgb)
+            self.canvas.line(a.data + b.data, fill=self.rgb, width=self.lwidth)
             return
         
         divpoints = [a]
@@ -118,7 +122,7 @@ class KochFractal():
 
 class FractalTree():
     def __init__(self, canvas, factor, angle, areleaves=False, leafsize=5, 
-                isgrowdown=False, color=WHITE_RGB, 
+                isgrowdown=False, lwidth=1, color=WHITE_RGB, 
                 leaffill=GREEN_RGB, leafoutline=GREEN_RGB):
         self.canvas = canvas
         self.factor = factor
@@ -126,6 +130,7 @@ class FractalTree():
         self.isgrowdown = isgrowdown 
         self.leafsize = leafsize
         self.areleaves = areleaves
+        self.lwidth = lwidth
         self.rgb = color
         self.leaffill = leaffill
         self.leafoutline = leafoutline
@@ -147,9 +152,9 @@ class FractalTree():
         b1 = b - c.rotate(self.angle + dirangle)
         b2 = b - c.rotate(-self.angle + dirangle)
 
-        self.canvas.line(b.data + b1.data, self.rgb)
+        self.canvas.line(b.data + b1.data, fill=self.rgb, width=self.lwidth)
         self.__branch(b, b1, l - 1)
-        self.canvas.line(b.data + b2.data, self.rgb)
+        self.canvas.line(b.data + b2.data, fill=self.rgb, width=self.lwidth)
         self.__branch(b, b2, l - 1)
 
 
