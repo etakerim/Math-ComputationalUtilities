@@ -4,21 +4,21 @@ from vector import Vector2D
 
 WHITE_RGB = (255, 255, 255)
 
+
 class MathLogo:
 
     def __init__(self, img, filename):
         self.img = img
         self.filename = filename
-    
+
     def __enter__(self):
         self.canvas = ImageDraw.Draw(self.img)
         return self.canvas
 
     def __exit__(self, *args):
-        self.img.save(
-                self.filename, 
-                self.filename.rpartition('.')[-1].upper()
-                )
+        self.img.save(self.filename, 
+                      self.filename.rpartition('.')[-1].upper())
+
 
 class PeriodicMathFunc():
     def period_draw(self, mfunc):
@@ -28,6 +28,7 @@ class PeriodicMathFunc():
             x, y = mfunc(angle)
             self.canvas.line((prevx, prevy, x, y), fill=self.rgb)
             prevx, prevy = x, y
+
 
 class Rose(PeriodicMathFunc):
     def __init__(self, canvas, pos, r, leafcnt, color=WHITE_RGB):
@@ -50,10 +51,11 @@ class Rose(PeriodicMathFunc):
     def draw(self):
         self.period_draw(self.__rose_calc)
 
+
 class Lissajous(PeriodicMathFunc):
     def __init__(self, canvas, 
-        pos, a_amp, b_amp, a, b, delta,
-        color=WHITE_RGB):
+                 pos, a_amp, b_amp, a, b, delta,
+                 color=WHITE_RGB):
 
         self.canvas = canvas
         self.pos = pos
@@ -72,6 +74,7 @@ class Lissajous(PeriodicMathFunc):
 
     def draw(self):
        self.period_draw(self.__lissajous_calc) 
+
 
 class KochFractal():
     def __init__(self, canvas, color=WHITE_RGB):
