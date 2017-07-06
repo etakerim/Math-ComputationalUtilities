@@ -162,19 +162,24 @@ class FractalTree():
         y2 = y - rootheight
         if self.isgrowdown:
             y2 = y + rootheight
-        self.canvas.line((x, y, x, y - rootheight), self.rgb) 
+        self.canvas.line((x, y, x, y - rootheight), 
+                        fill=self.rgb, width=self.lwidth) 
         self.__branch(Vector2D(x, y), Vector2D(x, y - rootheight), depth)
 
 
 if __name__ == '__main__':
     IMG_SIZE = (600, 500)
+    LINE_WIDTH = 5
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2 + 10)
         treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
-        
-        KochFractal(ico).snowflake(*center, 220)
-        FractalTree(ico, 0.60, math.radians(35), areleaves=True).tree(*treebase, 80, 20)
-        Lissajous(ico, treebase, 30, 30).draw()
-        Rose(ico, (180, treebase[1] - 20), 30, 8).draw()
-        Rose(ico, (420, treebase[1] - 20), 30, 8).draw()
+       
+        ico.rectangle((0, 0, IMG_SIZE[0], IMG_SIZE[1]), fill=(235, 235, 235))
+
+        KochFractal(ico, lwidth=LINE_WIDTH, color=(33, 145, 237)).snowflake(*center, 220) 
+        FractalTree(ico, 0.60, math.radians(35), 
+                    areleaves=True, color=(160, 75, 0), lwidth=LINE_WIDTH).tree(*treebase, 80, 20)
+        Lissajous(ico, treebase, 30, 30, color=(84, 40, 0), lwidth=LINE_WIDTH).draw()
+        Rose(ico, (180, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
+        Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
