@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw
 from vector import Vector2D
 
 WHITE_RGB = (255, 255, 255)
+BLACK_RGB = (0,     0,   0)
 GREEN_RGB = (0,   255,   0)
 
 class MathLogo:
@@ -167,13 +168,29 @@ class FractalTree():
         self.__branch(Vector2D(x, y), Vector2D(x, y - rootheight), depth)
 
 
+class CircleCarpet():
+    def __init__(self, canvas, density=8, outline=WHITE_RGB):
+        self.canvas = canvas
+        self.density = density
+        self.outline = outline
+
+
+    def draw(self, x, y, r):
+        self.canvas.ellipse((x - r, y - r, x + r, y + r), outline=self.outline)
+        if (r > self.density):
+            self.draw(x + r, y, r / 2)
+            self.draw(x - r, y, r / 2)
+            self.draw(x, y + r, r / 2)
+            self.draw(x, y - r, r / 2)
+
+
 if __name__ == '__main__':
     IMG_SIZE = (600, 500)
     LINE_WIDTH = 5
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2 + 10)
-        treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
+        """treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
        
         ico.rectangle((0, 0, IMG_SIZE[0], IMG_SIZE[1]), fill=(235, 235, 235))
 
@@ -182,4 +199,6 @@ if __name__ == '__main__':
                     areleaves=True, color=(160, 75, 0), lwidth=LINE_WIDTH).tree(*treebase, 80, 20)
         Lissajous(ico, treebase, 30, 30, color=(84, 40, 0), lwidth=LINE_WIDTH).draw()
         Rose(ico, (180, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
-        Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
+        Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210,
+        0, 0)).draw()"""
+        CircleCarpet(ico).draw(*center, 200)
