@@ -183,14 +183,36 @@ class CircleCarpet():
             self.draw(x, y + r, r / 2)
             self.draw(x, y - r, r / 2)
 
+class L_System():
+    def __init__(self, canvas, 
+                 alphabet='AB', axiom='A', rules={'A': 'AB', 'B': 'A'}):
+            self.canvas = canvas
+            self.alphabet = alphabet
+            self.axiom = axiom
+            self.rules = rules # pozor na dict
 
+    def generate(self, sentence):
+        newsentence = ''
+        for c in sentence:
+            if c in self.rules.keys():
+                newsentence += self.rules[c]
+            else:
+                newsentence += c
+        return newsentence
+  
+s = 'A'
+for i in range(10):
+    s = L_System(None).generate(s)
+    print(s)
+
+"""
 if __name__ == '__main__':
     IMG_SIZE = (600, 500)
     LINE_WIDTH = 5
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2 + 10)
-        """treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
+        treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
        
         ico.rectangle((0, 0, IMG_SIZE[0], IMG_SIZE[1]), fill=(235, 235, 235))
 
@@ -199,6 +221,6 @@ if __name__ == '__main__':
                     areleaves=True, color=(160, 75, 0), lwidth=LINE_WIDTH).tree(*treebase, 80, 20)
         Lissajous(ico, treebase, 30, 30, color=(84, 40, 0), lwidth=LINE_WIDTH).draw()
         Rose(ico, (180, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
-        Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210,
-        0, 0)).draw()"""
+        Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
         CircleCarpet(ico).draw(*center, 200)
+"""
