@@ -183,37 +183,61 @@ class CircleCarpet():
             self.draw(x, y + r, r / 2)
             self.draw(x, y - r, r / 2)
 
+
+
+
 class L_System():
-    def __init__(self, canvas, 
-                 alphabet='AB', axiom='A', rules={'A': 'AB', 'B': 'A'}):
+    def __init__(self, canvas, length, generations=5, faktor=0.6, 
+                 alphabet='F+-[]', axiom='F', rules={'F': 'FF+[+F-F-F]-[-F+F+F]'}):
             self.canvas = canvas
             self.alphabet = alphabet
             self.axiom = axiom
+            self.sentence = axiom
             self.rules = rules # pozor na dict
+            self.length = Vector2D(0, length)
+            self.faktor = faktor
+            self.gens = generations 
 
-    def generate(self, sentence):
-        newsentence = ''
-        for c in sentence:
-            if c in self.rules.keys():
-                newsentence += self.rules[c]
-            else:
-                newsentence += c
-        return newsentence
-  
-s = 'A'
-for i in range(10):
-    s = L_System(None).generate(s)
-    print(s)
 
-"""
+    def generate(self):
+        for g in range(self.gens):
+            self.length *= self.faktor 
+            newsentence = ''
+            for c in self.sentence:
+                if c in self.rules.keys():
+                    newsentence += self.rules[c]
+                else:
+                    newsentence += c
+            self.sentence = newsentence
+        print(self.sentence)
+        return self
+
+    """
+    def turtle(self, x, y):
+        stored_state = None
+        curr_state = Vector2D(x, y) 
+        for c in self.sentence:
+            if c == 'F':
+                self.canvas.line(curr_state.data 
+                                + (curr_state - self.length).data, fill=WHITE_RGB)
+                curr_state = curr_state - self.length
+            elif c == '+':
+                curr_state = curr_state - self.length.rotate(math.pi / 6)
+            elif c == '-':
+                curr_state = curr_state - self.length.rotate(-math.pi / 6)
+            elif c == '[':
+                stored_state = curr_state
+            elif c == ']':
+                curr_state = stored_state
+    """
+
 if __name__ == '__main__':
     IMG_SIZE = (600, 500)
     LINE_WIDTH = 5
 
     with MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
         center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2 + 10)
-        treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3))
-       
+        treebase = (IMG_SIZE[0] / 2, IMG_SIZE[1] - (IMG_SIZE[1] / 3)) 
         ico.rectangle((0, 0, IMG_SIZE[0], IMG_SIZE[1]), fill=(235, 235, 235))
 
         KochFractal(ico, lwidth=LINE_WIDTH, color=(33, 145, 237)).snowflake(*center, 220) 
@@ -222,5 +246,5 @@ if __name__ == '__main__':
         Lissajous(ico, treebase, 30, 30, color=(84, 40, 0), lwidth=LINE_WIDTH).draw()
         Rose(ico, (180, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
         Rose(ico, (420, treebase[1] - 20), 30, 8, lwidth=LINE_WIDTH, color=(210, 0, 0)).draw()
-        CircleCarpet(ico).draw(*center, 200)
-"""
+        #CircleCarpet(ico).draw(*center, 200)
+        
