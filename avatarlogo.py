@@ -140,9 +140,9 @@ class FractalTree():
     def __branch(self, a, b, l):
         if l == 0 or abs(b - a) < 2:
             if self.areleaves:
-                self.canvas.ellipse(b.data + (b + Vector2D(self.leafsize, 
-                                    self.leafsize)).data, fill=self.leaffill,
-                                    outline=self.leafoutline)
+                radius = Vector2D(self.leafsize, self.leafsize)
+                self.canvas.ellipse((b - radius).data + (b + radius).data, 
+                                    fill=self.leaffill, outline=self.leafoutline)
             return
 
         dirangle = math.pi
