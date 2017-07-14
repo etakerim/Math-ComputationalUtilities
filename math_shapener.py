@@ -1,13 +1,56 @@
 import sys
 from PySide.QtCore import Qt, QTimer
-from PySide.QtGui import (QApplication, QWidget, QMainWindow, QLabel,
-                          QPushButton, QComboBox, QIcon, QPixmap, QVBoxLayout)
+from PySide.QtGui import (QApplication, QHBoxLayout, QVBoxLayout, QFormLayout,
+                          QWidget, QMainWindow, QLabel, QPainter,
+                          QPushButton, QPalette, QComboBox, QIcon, QPixmap,
+                          QVBoxLayout, QSpinBox)
 
+
+class Renderer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setBackgroundRole(QPalette.Base)
+        self.setAutoFillBackground(True)
+
+    def draw(self):
+        pass # QPaintEvent
 
 class MathShapener(QWidget):
     def __init__(self):
         super().__init__()
-        # Create app graphics
+        self.mainlayout = QHBoxLayout()
+
+        self.leftlayout = QVBoxLayout()
+        self.topmenu = QHBoxLayout()
+        self.shapesel = QComboBox()
+        self.shapesel.addItem('Sinusoda')
+        self.shapesel.addItem('Lissajouova krivka')
+        self.shapesel.addItem('Ruža')
+        self.topmenu.addWidget(self.shapesel)
+
+        self.canvas = Renderer()
+        self.leftlayout.addLayout(self.topmenu)
+        self.leftlayout.addWidget(self.canvas)
+
+        self.rightlayout = QVBoxLayout()
+        self.posinfo_layout = QFormLayout()
+        self.xlabel = QLabel('X: ')
+        self.xdata = QSpinBox()
+        self.xdata.setRange(0, 600)
+        self.ylabel = QLabel('Y: ')
+        self.ydata = QSpinBox()
+        self.ydata.setRange(0, 600)
+        self.posinfo_layout.addWidget(self.xlabel)
+        self.posinfo_layout.addWidget(self.xdata)
+        self.posinfo_layout.addWidget(self.ylabel)
+        self.posinfo_layout.addWidget(self.ydata)
+        self.rightlayout.addLayout(self.posinfo_layout)
+
+        # ADD Widgets and layouts HBOX -> VBox(Menu,..Canvas) ...,
+        # VBOX(Ovladác)
+        self.mainlayout.addLayout(self.leftlayout)
+        self.mainlayout.addLayout(self.rightlayout)
+        self.setLayout(self.mainlayout)
 
 
 class AppWindow(QMainWindow):
