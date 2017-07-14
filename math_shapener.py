@@ -23,9 +23,12 @@ class MathShapener(QWidget):
         self.leftlayout = QVBoxLayout()
         self.topmenu = QHBoxLayout()
         self.shapesel = QComboBox()
-        self.shapesel.addItem('Sinusoda')
-        self.shapesel.addItem('Lissajouova krivka')
-        self.shapesel.addItem('Ruža')
+        mshapes = ['Sínus', 'Kosínus', 'Lissajousova krivka', 
+                   'Vektor', 'Kruh', 'Ruža', 'Kochova krivka', 
+                   'Kochova vločka', 'Serpinského koberec', 
+                   'Fraktálový strom', 'Mandelbrotova množina', 
+                   'L-system (Korytnačka)']
+        self.shapesel.addItems(mshapes)
         self.topmenu.addWidget(self.shapesel)
 
         self.canvas = Renderer()
@@ -48,8 +51,8 @@ class MathShapener(QWidget):
 
         # ADD Widgets and layouts HBOX -> VBox(Menu,..Canvas) ...,
         # VBOX(Ovladác)
-        self.mainlayout.addLayout(self.leftlayout)
-        self.mainlayout.addLayout(self.rightlayout)
+        self.mainlayout.addLayout(self.leftlayout, 4)
+        self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
 
 
