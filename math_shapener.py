@@ -3,7 +3,8 @@ from PySide.QtCore import Qt, QTimer
 from PySide.QtGui import (QApplication, QHBoxLayout, QVBoxLayout, QFormLayout,
                           QWidget, QMainWindow, QLabel, QPainter,
                           QPushButton, QPalette, QComboBox, QIcon, QPixmap,
-                          QCheckBox, QSlider, QSpinBox, QGroupBox, QSplitter)
+                          QCheckBox, QColor, QPen, QBrush, 
+                          QSlider, QSpinBox, QGroupBox, QSplitter)
 
 
 class Canvas(QWidget):
@@ -12,7 +13,7 @@ class Canvas(QWidget):
         self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
 
-    def draw(self):
+    def paintEvent(self, ev):
         pass # QPaintEvent
 
 
@@ -36,7 +37,7 @@ class MathShapener(QWidget):
         self.rightlayout.addWidget(self.xy_setting())
         self.rightlayout.addWidget(self.animation_setings())
 
-        self.mainlayout.addLayout(self.leftlayout, 4)
+        self.mainlayout.addLayout(self.leftlayout, 6)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
 
@@ -56,22 +57,30 @@ class MathShapener(QWidget):
         coor.setLayout(self.posinfo_layout)
         return coor
 
+    def display_interval(self):
+        val = self.slidinterval.value()
+        self.intlabel.setText('Interval: {} ms'.format(val))
+
     def animation_setings(self):
         animgroup = QGroupBox('Animácia')
         animlayout = QFormLayout()
         
-        intlabel = QLabel('Interval (ms)')
+        self.intlabel = QLabel()
         self.slidinterval = QSlider(Qt.Horizontal)
         self.slidinterval.setMinimum(10)
         self.slidinterval.setMaximum(500)
         self.slidinterval.setTickInterval(500 // 10)
-
+        self.slidinterval.valueChanged.connect(self.display_interval)
+        self.slidinterval.setValue(100)
         self.animplay = QPushButton('Play/Stop')
         self.animpause = QPushButton('Pauza')
         
-        animlayout.addRow(intlabel)
+        animlayout.addRow(self.intlabel)
         animlayout.addRow(self.slidinterval)
-        animlayout.addRow(self.animplay, self.animpause)
+        ctrl_layout = QHBoxLayout()
+        ctrl_layout.addWidget(self.animplay)
+        ctrl_layout.addWidget(self.animpause)
+        animlayout.addRow(ctrl_layout)
         animgroup.setLayout(animlayout)
 
         return animgroup
