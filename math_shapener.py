@@ -3,10 +3,10 @@ from PySide.QtCore import Qt, QTimer
 from PySide.QtGui import (QApplication, QHBoxLayout, QVBoxLayout, QFormLayout,
                           QWidget, QMainWindow, QLabel, QPainter,
                           QPushButton, QPalette, QComboBox, QIcon, QPixmap,
-                          QVBoxLayout, QSpinBox)
+                          QCheckBox, QSpinBox, QGroupBox, QSplitter)
 
 
-class Renderer(QWidget):
+class Canvas(QWidget):
     def __init__(self):
         super().__init__()
         self.setBackgroundRole(QPalette.Base)
@@ -14,6 +14,7 @@ class Renderer(QWidget):
 
     def draw(self):
         pass # QPaintEvent
+
 
 class MathShapener(QWidget):
     def __init__(self):
@@ -29,13 +30,16 @@ class MathShapener(QWidget):
                    'Fraktálový strom', 'Mandelbrotova množina', 
                    'L-system (Korytnačka)']
         self.shapesel.addItems(mshapes)
-        self.topmenu.addWidget(self.shapesel)
+        self.isgridactive = QCheckBox('Mriežka')
+        self.topmenu.addWidget(self.shapesel, 4)
+        self.topmenu.addWidget(self.isgridactive, 2)
 
-        self.canvas = Renderer()
+        self.canvas = Canvas()
         self.leftlayout.addLayout(self.topmenu)
         self.leftlayout.addWidget(self.canvas)
 
         self.rightlayout = QVBoxLayout()
+        self.coordgroup = QGroupBox('Súradnice')
         self.posinfo_layout = QFormLayout()
         self.xlabel = QLabel('X: ')
         self.xdata = QSpinBox()
@@ -43,14 +47,11 @@ class MathShapener(QWidget):
         self.ylabel = QLabel('Y: ')
         self.ydata = QSpinBox()
         self.ydata.setRange(0, 600)
-        self.posinfo_layout.addWidget(self.xlabel)
-        self.posinfo_layout.addWidget(self.xdata)
-        self.posinfo_layout.addWidget(self.ylabel)
-        self.posinfo_layout.addWidget(self.ydata)
-        self.rightlayout.addLayout(self.posinfo_layout)
-
-        # ADD Widgets and layouts HBOX -> VBox(Menu,..Canvas) ...,
-        # VBOX(Ovladác)
+        self.posinfo_layout.addRow(self.xlabel, self.xdata)
+        self.posinfo_layout.addRow(self.ylabel, self.ydata)
+        self.coordgroup.setLayout(self.posinfo_layout)
+        self.rightlayout.addWidget(self.coordgroup)
+        
         self.mainlayout.addLayout(self.leftlayout, 4)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
