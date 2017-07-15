@@ -3,7 +3,7 @@ from PySide.QtCore import Qt, QTimer
 from PySide.QtGui import (QApplication, QHBoxLayout, QVBoxLayout, QFormLayout,
                           QWidget, QMainWindow, QLabel, QPainter,
                           QPushButton, QPalette, QComboBox, QIcon, QPixmap,
-                          QCheckBox, QSpinBox, QGroupBox, QSplitter)
+                          QCheckBox, QSlider, QSpinBox, QGroupBox, QSplitter)
 
 
 class Canvas(QWidget):
@@ -34,7 +34,8 @@ class MathShapener(QWidget):
         
         self.rightlayout = QVBoxLayout()
         self.rightlayout.addWidget(self.xy_setting())
-        
+        self.rightlayout.addWidget(self.animation_setings())
+
         self.mainlayout.addLayout(self.leftlayout, 4)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
@@ -43,17 +44,37 @@ class MathShapener(QWidget):
         coor = QGroupBox('Súradnice')
         self.posinfo_layout = QFormLayout()
         
-        self.xlabel = QLabel('X: ')
+        xlabel = QLabel('X: ')
         self.xdata = QSpinBox()
         self.xdata.setRange(0, 600)
-        self.ylabel = QLabel('Y: ')
+        ylabel = QLabel('Y: ')
         self.ydata = QSpinBox()
         self.ydata.setRange(0, 600)
 
-        self.posinfo_layout.addRow(self.xlabel, self.xdata)
-        self.posinfo_layout.addRow(self.ylabel, self.ydata)
+        self.posinfo_layout.addRow(xlabel, self.xdata)
+        self.posinfo_layout.addRow(ylabel, self.ydata)
         coor.setLayout(self.posinfo_layout)
         return coor
+
+    def animation_setings(self):
+        animgroup = QGroupBox('Animácia')
+        animlayout = QFormLayout()
+        
+        intlabel = QLabel('Interval (ms)')
+        self.slidinterval = QSlider(Qt.Horizontal)
+        self.slidinterval.setMinimum(10)
+        self.slidinterval.setMaximum(500)
+        self.slidinterval.setTickInterval(500 // 10)
+
+        self.animplay = QPushButton('Play/Stop')
+        self.animpause = QPushButton('Pauza')
+        
+        animlayout.addRow(intlabel)
+        animlayout.addRow(self.slidinterval)
+        animlayout.addRow(self.animplay, self.animpause)
+        animgroup.setLayout(animlayout)
+
+        return animgroup
 
     def shape_select(self):
         topmenu = QHBoxLayout()
