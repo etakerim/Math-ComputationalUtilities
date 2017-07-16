@@ -1,23 +1,21 @@
 import sys
-from PySide.QtCore import Qt, QTimer
-from PySide.QtGui import (QApplication, QHBoxLayout, QVBoxLayout, QFormLayout,
-                          QWidget, QMainWindow, QLabel, QPainter,
-                          QPushButton, QPalette, QComboBox, QIcon, QPixmap,
-                          QCheckBox, QColor, QPen, QBrush, 
-                          QSlider, QSpinBox, QGroupBox, QSplitter)
+from PySide import QtCore
+from PySide import QtGui
 
 
-class Canvas(QWidget):
+class Canvas(QtGui.QWidget):
     def __init__(self):
         super().__init__()
-        self.setBackgroundRole(QPalette.Base)
+        self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
 
-    def paintEvent(self, ev):
-        pass # QPaintEvent
+    def paintEvent(self, event):
+        #self.drawRect(QRect(0, 0, 100, 100))
+        pass 
 
 
-class MathShapener(QWidget):
+class MathShapener(QtGui.QWidget):
+    # Spraviť zoznam slovníkov a predávať len slovníkové pohľady
     MSHAPES = ['Sínus', 'Kosínus', 'Lissajousova krivka', 
                 'Vektor', 'Kruh', 'Ruža', 'Kochova krivka', 
                 'Kochova vločka', 'Serpinského koberec', 
@@ -26,14 +24,14 @@ class MathShapener(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.mainlayout = QHBoxLayout()
+        self.mainlayout = QtGui.QHBoxLayout()
 
-        self.leftlayout = QVBoxLayout()
+        self.leftlayout = QtGui.QVBoxLayout()
         self.leftlayout.addLayout(self.shape_select())
         self.canvas = Canvas()
         self.leftlayout.addWidget(self.canvas)
         
-        self.rightlayout = QVBoxLayout()
+        self.rightlayout = QtGui.QVBoxLayout()
         self.rightlayout.addWidget(self.xy_setting())
         self.rightlayout.addWidget(self.animation_setings())
 
@@ -42,14 +40,14 @@ class MathShapener(QWidget):
         self.setLayout(self.mainlayout)
 
     def xy_setting(self):
-        coor = QGroupBox('Súradnice')
-        self.posinfo_layout = QFormLayout()
+        coor = QtGui.QGroupBox('Súradnice')
+        self.posinfo_layout = QtGui.QFormLayout()
         
-        xlabel = QLabel('X: ')
-        self.xdata = QSpinBox()
+        xlabel = QtGui.QLabel('X: ')
+        self.xdata = QtGui.QSpinBox()
         self.xdata.setRange(0, 600)
-        ylabel = QLabel('Y: ')
-        self.ydata = QSpinBox()
+        ylabel = QtGui.QLabel('Y: ')
+        self.ydata = QtGui.QSpinBox()
         self.ydata.setRange(0, 600)
 
         self.posinfo_layout.addRow(xlabel, self.xdata)
@@ -62,22 +60,22 @@ class MathShapener(QWidget):
         self.intlabel.setText('Interval: {} ms'.format(val))
 
     def animation_setings(self):
-        animgroup = QGroupBox('Animácia')
-        animlayout = QFormLayout()
+        animgroup = QtGui.QGroupBox('Animácia')
+        animlayout = QtGui.QFormLayout()
         
-        self.intlabel = QLabel()
-        self.slidinterval = QSlider(Qt.Horizontal)
+        self.intlabel = QtGui.QLabel()
+        self.slidinterval = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.slidinterval.setMinimum(10)
         self.slidinterval.setMaximum(500)
         self.slidinterval.setTickInterval(500 // 10)
         self.slidinterval.valueChanged.connect(self.display_interval)
         self.slidinterval.setValue(100)
-        self.animplay = QPushButton('Play/Stop')
-        self.animpause = QPushButton('Pauza')
+        self.animplay = QtGui.QPushButton('Play/Stop')
+        self.animpause = QtGui.QPushButton('Pauza')
         
         animlayout.addRow(self.intlabel)
         animlayout.addRow(self.slidinterval)
-        ctrl_layout = QHBoxLayout()
+        ctrl_layout = QtGui.QHBoxLayout()
         ctrl_layout.addWidget(self.animplay)
         ctrl_layout.addWidget(self.animpause)
         animlayout.addRow(ctrl_layout)
@@ -86,12 +84,12 @@ class MathShapener(QWidget):
         return animgroup
 
     def shape_select(self):
-        topmenu = QHBoxLayout()
+        topmenu = QtGui.QHBoxLayout()
         
-        self.shapesel = QComboBox()
+        self.shapesel = QtGui.QComboBox()
         self.shapesel.addItems(self.MSHAPES)
-        self.isgridactive = QCheckBox('Mriežka')
-        self.savebtn = QPushButton('Uložiť')
+        self.isgridactive = QtGui.QCheckBox('Mriežka')
+        self.savebtn = QtGui.QPushButton('Uložiť')
         
         topmenu.addWidget(self.shapesel, 5)
         topmenu.addWidget(self.savebtn, 2)
@@ -103,7 +101,8 @@ class MathShapener(QWidget):
         # self.shapesel.activated('') = #func add widgets + their signals
         pass
 
-class AppWindow(QMainWindow):
+
+class AppWindow(QtGui.QMainWindow):
     def __init__(self, title, min_size):
         super().__init__()
         self.setWindowTitle(title)
@@ -114,6 +113,6 @@ class AppWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
     window = AppWindow('Mathematical Shape Sharpener', (600, 400))
     app.exec_()
