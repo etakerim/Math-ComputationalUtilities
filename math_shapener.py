@@ -10,13 +10,47 @@ class Canvas(QtGui.QWidget):
         self.setAutoFillBackground(True)
 
     def paintEvent(self, event):
-        #self.drawRect(QRect(0, 0, 100, 100))
-        pass 
+        w = self.size().width()
+        h = self.size().height()
+        p = QtGui.QPainter()
+
+        p.begin(self)
+        p.fillRect(0, 0, w, h, QtGui.QColor(QtCore.Qt.white)) 
+        p.end()
+        pass
+
+
+class NumericSettings(QtGui.QHBoxLayout):
+    def __init__(self, name, minimum, maximum, 
+                 unit='', func_valuser=lambda x: x):
+        super().__init__()
+        self.namelab = QtGui.QLabel(name)
+        self.valuelab = QtGui.QLabel()
+        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+        self.func_valuser = func_valuser
+        self.unit = unit
+
+        self.slider.setRange(minimum, maximum)
+        self.slider.valueChanged.connect(self.value_show)
+        self.slider.setValue((maximum + minimum) // 2)
+
+        self.addWidget(self.namelab)
+        self.addWidget(self.slider)
+        self.addWidget(self.valuelab)
+
+    def value_show(self):
+        self.valuelab.setText('{}{}'.format(self.value(), self.unit))
+
+    def slot_datachange(self, func):
+        self.slider.valueChanged.connect(func)
+
+    def value(self):
+        return self.func_valuser(self.slider.value())
 
 
 class MathShapener(QtGui.QWidget):
     # Spraviť zoznam slovníkov a predávať len slovníkové pohľady
-    MSHAPES = ['Sínus', 'Kosínus', 'Lissajousova krivka', 
+    MSHAPES = ['--- Vyber útvar --- ', 'Sínusoida', 'Lissajousova krivka', 
                 'Vektor', 'Kruh', 'Ruža', 'Kochova krivka', 
                 'Kochova vločka', 'Serpinského koberec', 
                 'Fraktálový strom', 'Mandelbrotova množina', 
@@ -32,28 +66,43 @@ class MathShapener(QtGui.QWidget):
         self.leftlayout.addWidget(self.canvas)
         
         self.rightlayout = QtGui.QVBoxLayout()
-        self.rightlayout.addWidget(self.xy_setting())
+        self.rightlayout.setAlignment(QtCore.Qt.AlignTop)
+        self.rightlayout.addWidget(self.xy_settings())
+        self.rightlayout.addWidget(self.sinus_settings())
         self.rightlayout.addWidget(self.animation_setings())
-
+        self.savebtn = QtGui.QPushButton('Uložiť')
+        self.rightlayout.addWidget(self.savebtn)
+        
         self.mainlayout.addLayout(self.leftlayout, 6)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
 
-    def xy_setting(self):
+    def xy_settings(self):
         coor = QtGui.QGroupBox('Súradnice')
-        self.posinfo_layout = QtGui.QFormLayout()
+        posinfo_layout = QtGui.QVBoxLayout()
         
-        xlabel = QtGui.QLabel('X: ')
-        self.xdata = QtGui.QSpinBox()
-        self.xdata.setRange(0, 600)
-        ylabel = QtGui.QLabel('Y: ')
-        self.ydata = QtGui.QSpinBox()
-        self.ydata.setRange(0, 600)
+        xsetting = NumericSettings('X: ', 0, 600, ' px')
+        ysetting = NumericSettings('Y: ', 0, 600, ' px')
 
-        self.posinfo_layout.addRow(xlabel, self.xdata)
-        self.posinfo_layout.addRow(ylabel, self.ydata)
-        coor.setLayout(self.posinfo_layout)
+        posinfo_layout.addLayout(xsetting)
+        posinfo_layout.addLayout(ysetting)
+        coor.setLayout(posinfo_layout)
         return coor
+
+    def sinus_settings(self):
+        setting = QtGui.QGroupBox('Vlastnosti objektu')
+        sinus_layout = QtGui.QVBoxLayout()
+        
+        self.slid_sinamp = NumericSettings('Amplitúda: ', 0, 300, ' px')  
+        self.slid_period = NumericSettings('Perióda  : ', -360, 360, ' °')
+        self.slid_phaze  = NumericSettings('Fáza     : ', -360, 360, ' °')
+
+        sinus_layout.addLayout(self.slid_sinamp)
+        sinus_layout.addLayout(self.slid_period)
+        sinus_layout.addLayout(self.slid_phaze)
+        setting.setLayout(sinus_layout) 
+
+        return setting
 
     def display_interval(self):
         val = self.slidinterval.value()
@@ -67,9 +116,8 @@ class MathShapener(QtGui.QWidget):
         self.slidinterval = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.slidinterval.setMinimum(10)
         self.slidinterval.setMaximum(500)
-        self.slidinterval.setTickInterval(500 // 10)
         self.slidinterval.valueChanged.connect(self.display_interval)
-        self.slidinterval.setValue(100)
+        self.slidinterval.setValue(500)
         self.animplay = QtGui.QPushButton('Play/Stop')
         self.animpause = QtGui.QPushButton('Pauza')
         
@@ -89,10 +137,12 @@ class MathShapener(QtGui.QWidget):
         self.shapesel = QtGui.QComboBox()
         self.shapesel.addItems(self.MSHAPES)
         self.isgridactive = QtGui.QCheckBox('Mriežka')
-        self.savebtn = QtGui.QPushButton('Uložiť')
-        
+        self.arealab = QtGui.QLabel('Plocha: ') 
+        self.circumlab = QtGui.QLabel('Obvod: ')
+       
         topmenu.addWidget(self.shapesel, 5)
-        topmenu.addWidget(self.savebtn, 2)
+        topmenu.addWidget(self.arealab, 2)
+        topmenu.addWidget(self.circumlab, 2)
         topmenu.addWidget(self.isgridactive, 2)
         return topmenu
 
