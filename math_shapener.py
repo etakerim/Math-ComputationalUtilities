@@ -3,28 +3,39 @@ from PySide import QtCore
 from PySide import QtGui
 
 
+class CoordinateGrid(QtGui.QPainterPath):
+    def __init__(self, canvas):
+        super().__init__()
+        self.canvas = canvas
+
+    def draw(self):
+        pass ## X, Y zmena sa musí dostať eventom 
+
+
 class Canvas(QtGui.QWidget):
     def __init__(self):
         super().__init__()
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
 
+    @property
+    def dim(self):
+        return (self.size().width(), self.size().height())
+
     def paintEvent(self, event):
-        w = self.size().width()
-        h = self.size().height()
+        w, h = self.dim
         p = QtGui.QPainter()
 
         p.begin(self)
         p.fillRect(0, 0, w, h, QtGui.QColor(QtCore.Qt.white)) 
+        # All objects here
         p.end()
-        pass
 
 
 class NumericSettings(QtGui.QHBoxLayout):
-    def __init__(self, name, minimum, maximum, 
+    def __init__(self, minimum, maximum, 
                  unit='', func_valuser=lambda x: x):
         super().__init__()
-        self.namelab = QtGui.QLabel(name)
         self.valuelab = QtGui.QLabel()
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.func_valuser = func_valuser
@@ -33,10 +44,11 @@ class NumericSettings(QtGui.QHBoxLayout):
         self.slider.setRange(minimum, maximum)
         self.slider.valueChanged.connect(self.value_show)
         self.slider.setValue((maximum + minimum) // 2)
+        self.slider.valueChanged.emit(0)
 
-        self.addWidget(self.namelab)
-        self.addWidget(self.slider)
-        self.addWidget(self.valuelab)
+        self.addWidget(self.slider, 7)
+        self.addWidget(self.valuelab, 3)
+        self.setAlignment(self.valuelab, QtCore.Qt.AlignRight)
 
     def value_show(self):
         self.valuelab.setText('{}{}'.format(self.value(), self.unit))
@@ -79,28 +91,30 @@ class MathShapener(QtGui.QWidget):
 
     def xy_settings(self):
         coor = QtGui.QGroupBox('Súradnice')
-        posinfo_layout = QtGui.QVBoxLayout()
+        poslayout = QtGui.QFormLayout()
         
-        xsetting = NumericSettings('X: ', 0, 600, ' px')
-        ysetting = NumericSettings('Y: ', 0, 600, ' px')
+        xsetting = NumericSettings(0, 600, ' px')
+        ysetting = NumericSettings(0, 600, ' px')
 
-        posinfo_layout.addLayout(xsetting)
-        posinfo_layout.addLayout(ysetting)
-        coor.setLayout(posinfo_layout)
+        poslayout.addRow(QtGui.QLabel('X'), xsetting)
+        poslayout.addRow(QtGui.QLabel('Y'), ysetting)
+        coor.setLayout(poslayout)
         return coor
 
     def sinus_settings(self):
         setting = QtGui.QGroupBox('Vlastnosti objektu')
-        sinus_layout = QtGui.QVBoxLayout()
+        sinlayout = QtGui.QFormLayout()
         
-        self.slid_sinamp = NumericSettings('Amplitúda: ', 0, 300, ' px')  
-        self.slid_period = NumericSettings('Perióda  : ', -360, 360, ' °')
-        self.slid_phaze  = NumericSettings('Fáza     : ', -360, 360, ' °')
+        self.slid_sinamp = NumericSettings(0, 300, ' px')  
+        self.slid_period = NumericSettings(-360, 360, ' °')
+        self.slid_phaze  = NumericSettings(-360, 360, ' °')
+        self.periodlen   = NumericSettings(0, 20)
 
-        sinus_layout.addLayout(self.slid_sinamp)
-        sinus_layout.addLayout(self.slid_period)
-        sinus_layout.addLayout(self.slid_phaze)
-        setting.setLayout(sinus_layout) 
+        sinlayout.addRow(QtGui.QLabel('Amplitúda'), self.slid_sinamp)
+        sinlayout.addRow(QtGui.QLabel('Perióda'), self.slid_period)
+        sinlayout.addRow(QtGui.QLabel('Fáza'), self.slid_phaze)
+        sinlayout.addRow(QtGui.QLabel('# Periód'), self.periodlen)
+        setting.setLayout(sinlayout) 
 
         return setting
 
