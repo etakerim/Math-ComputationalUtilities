@@ -4,17 +4,23 @@ from PySide import QtGui
 
 
 class CoordinateGrid(QtGui.QPainterPath):
-    def __init__(self, canvas):
-        super().__init__()
-        self.canvas = canvas
-
-    def draw(self):
-        pass ## X, Y zmena sa musí dostať eventom 
+    def draw(self, w, h):
+        for x in range(0, w, 50):
+            self.moveTo(x, 0)
+            self.lineTo(x, h)
+        for y in range(0, h, 50):
+            self.moveTo(0, y)
+            self.lineTo(w, y)
+        return self
 
 
 class Canvas(QtGui.QWidget):
     def __init__(self):
         super().__init__()
+        self.isgridactive = True
+        self.ggrid = CoordinateGrid()
+        self.gobj = None
+
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
 
@@ -28,13 +34,17 @@ class Canvas(QtGui.QWidget):
 
         p.begin(self)
         p.fillRect(0, 0, w, h, QtGui.QColor(QtCore.Qt.white)) 
-        # All objects here
+        if self.isgridactive:
+            p.setPen(QtGui.QColor(111, 110, 110))
+            p.drawPath(self.ggrid.draw(w, h))
+        if self.gobj:
+            p.drawPath(self.gobj.draw(w, h))
         p.end()
 
 
 class NumericSettings(QtGui.QHBoxLayout):
     def __init__(self, minimum, maximum, 
-                 unit='', func_valuser=lambda x: x):
+                 unit=' ', func_valuser=lambda x: x):
         super().__init__()
         self.valuelab = QtGui.QLabel()
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
