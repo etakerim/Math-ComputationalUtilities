@@ -1,17 +1,30 @@
 import sys
+import math
 from PySide import QtCore
 from PySide import QtGui
 
 
-class CoordinateGrid(QtGui.QPainterPath):
+def cart2screen(x, y, wscreen, hscreen):
+    return (x + wscreen // 2, -y + hscreen // 2)
+
+def screen2cart(x, y, wscreen, hscreen):
+    return (x - wscreen // 2, -y + hscreen // 2)
+
+# Pozn.: Dedenie z QPathPaintera spôsobuje anomálie->inštancuj
+class CoordinateGrid:
     def draw(self, w, h):
-        for x in range(0, w, 50):
-            self.moveTo(x, 0)
-            self.lineTo(x, h)
-        for y in range(0, h, 50):
-            self.moveTo(0, y)
-            self.lineTo(w, y)
-        return self
+        grid = QtGui.QPainterPath()
+        origin = cart2screen(0, 0, w, h)
+        detail = 50
+        
+        for x in range(origin[0] % detail, w, detail):
+            grid.moveTo(x, 0)
+            grid.lineTo(x, h)
+
+        for y in range(origin[1] % detail, h, detail):
+            grid.moveTo(0, y)
+            grid.lineTo(w, y)
+        return grid
 
 
 class Canvas(QtGui.QWidget):
@@ -31,12 +44,15 @@ class Canvas(QtGui.QWidget):
     def paintEvent(self, event):
         w, h = self.dim
         p = QtGui.QPainter()
-
+        
         p.begin(self)
-        p.fillRect(0, 0, w, h, QtGui.QColor(QtCore.Qt.white)) 
+        # p.setRenderHint(QtGui.QPainter.Antialiasing)
+        p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white)) 
+        
         if self.isgridactive:
-            p.setPen(QtGui.QColor(111, 110, 110))
+            p.setPen(QtGui.QColor(110, 110, 110))
             p.drawPath(self.ggrid.draw(w, h))
+
         if self.gobj:
             p.drawPath(self.gobj.draw(w, h))
         p.end()
