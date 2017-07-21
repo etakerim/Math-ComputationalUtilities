@@ -1,5 +1,5 @@
 import sys
-import math
+from collections import OrderedDict
 from PySide import QtCore
 from PySide import QtGui
 
@@ -7,16 +7,56 @@ from PySide import QtGui
 def cart2screen(x, y, wscreen, hscreen):
     return (x + wscreen // 2, -y + hscreen // 2)
 
+
 def screen2cart(x, y, wscreen, hscreen):
     return (x - wscreen // 2, -y + hscreen // 2)
 
-# Pozn.: Dedenie z QPathPaintera spôsobuje anomálie->inštancuj
+
+class Sinusoid:
+    def __init__(self):
+        self.settings = [self.xy_settings(), self.custom_settings()]
+
+    def draw(self, canvas):
+        obj = QtGui.QPainterPath()
+        return obj
+
+    def xy_settings(self):
+        coor = QtGui.QGroupBox('Súradnice')
+        poslayout = QtGui.QFormLayout()
+
+        xsetting = NumericSettings(0, 600, ' px')
+        ysetting = NumericSettings(0, 600, ' px')
+
+        poslayout.addRow(QtGui.QLabel('X'), xsetting)
+        poslayout.addRow(QtGui.QLabel('Y'), ysetting)
+        coor.setLayout(poslayout)
+        return coor
+
+    def custom_settings(self):
+        setting = QtGui.QGroupBox('Vlastnosti')
+        sinlayout = QtGui.QFormLayout()
+
+        self.slid_sinamp = NumericSettings(0, 300, ' px')
+        self.slid_period = NumericSettings(-360, 360, ' °')
+        self.slid_phaze = NumericSettings(-360, 360, ' °')
+        self.periodlen = NumericSettings(0, 20, 'x')
+
+        sinlayout.addRow(QtGui.QLabel('Amplitúda'), self.slid_sinamp)
+        sinlayout.addRow(QtGui.QLabel('Perióda'), self.slid_period)
+        sinlayout.addRow(QtGui.QLabel('Fáza'), self.slid_phaze)
+        sinlayout.addRow(QtGui.QLabel('Periód'), self.periodlen)
+        setting.setLayout(sinlayout)
+
+        return setting
+
+
 class CoordinateGrid:
-    def draw(self, w, h):
+    def draw(self, canvas):
         grid = QtGui.QPainterPath()
+        w, h = canvas.dim
         origin = cart2screen(0, 0, w, h)
         detail = 50
-        
+
         for x in range(origin[0] % detail, w, detail):
             grid.moveTo(x, 0)
             grid.lineTo(x, h)
@@ -30,9 +70,9 @@ class CoordinateGrid:
 class Canvas(QtGui.QWidget):
     def __init__(self):
         super().__init__()
-        self.isgridactive = True
+        self.isgridactive = False
         self.ggrid = CoordinateGrid()
-        self.gobj = None
+        self.graphobj = None
 
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
@@ -41,25 +81,29 @@ class Canvas(QtGui.QWidget):
     def dim(self):
         return (self.size().width(), self.size().height())
 
+    def grid_activate(self):
+        self.isgridactive = not self.isgridactive
+        self.update()
+
     def paintEvent(self, event):
         w, h = self.dim
         p = QtGui.QPainter()
-        
+
         p.begin(self)
         # p.setRenderHint(QtGui.QPainter.Antialiasing)
-        p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white)) 
-        
+        p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white))
+
         if self.isgridactive:
             p.setPen(QtGui.QColor(110, 110, 110))
-            p.drawPath(self.ggrid.draw(w, h))
+            p.drawPath(self.ggrid.draw(self))
 
-        if self.gobj:
-            p.drawPath(self.gobj.draw(w, h))
+        if self.graphobj:
+            p.drawPath(self.graphobj.draw(self))
         p.end()
 
 
 class NumericSettings(QtGui.QHBoxLayout):
-    def __init__(self, minimum, maximum, 
+    def __init__(self, minimum, maximum,
                  unit=' ', func_valuser=lambda x: x):
         super().__init__()
         self.valuelab = QtGui.QLabel()
@@ -87,62 +131,45 @@ class NumericSettings(QtGui.QHBoxLayout):
 
 
 class MathShapener(QtGui.QWidget):
-    # Spraviť zoznam slovníkov a predávať len slovníkové pohľady
-    MSHAPES = ['--- Vyber útvar --- ', 'Sínusoida', 'Lissajousova krivka', 
-                'Vektor', 'Kruh', 'Ruža', 'Kochova krivka', 
-                'Kochova vločka', 'Serpinského koberec', 
-                'Fraktálový strom', 'Mandelbrotova množina', 
-                'L-system (Korytnačka)']
-
     def __init__(self):
         super().__init__()
+        self.MSHAPES = OrderedDict([
+               ('--- Vyber útvar --- ', None),
+               ('Sínusoida', Sinusoid()),
+               ('Lissajousova krivka', None),
+               ('Vektor', None),
+               ('Kruh', None),
+               ('Ruža', None),
+               ('Kochova krivka', None),
+               ('Kochova vločka', None),
+               ('Serpinského koberec', None),
+               ('Fraktálový strom', None),
+               ('Mandelbrotova množina', None),
+               ('L-system (Korytnačka)', None)
+               ])
+
         self.mainlayout = QtGui.QHBoxLayout()
 
         self.leftlayout = QtGui.QVBoxLayout()
         self.leftlayout.addLayout(self.shape_select())
         self.canvas = Canvas()
         self.leftlayout.addWidget(self.canvas)
-        
+
+        # Udalosti
+        self.gridsel.stateChanged.connect(self.canvas.grid_activate)
+        self.shapesel.currentIndexChanged.connect(self.shape_change)
+
         self.rightlayout = QtGui.QVBoxLayout()
         self.rightlayout.setAlignment(QtCore.Qt.AlignTop)
-        self.rightlayout.addWidget(self.xy_settings())
-        self.rightlayout.addWidget(self.sinus_settings())
+        self.shape_change()
+
         self.rightlayout.addWidget(self.animation_setings())
-        self.savebtn = QtGui.QPushButton('Uložiť')
+        self.savebtn = QtGui.QPushButton('Uložiť obrázok')
         self.rightlayout.addWidget(self.savebtn)
-        
+
         self.mainlayout.addLayout(self.leftlayout, 6)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
-
-    def xy_settings(self):
-        coor = QtGui.QGroupBox('Súradnice')
-        poslayout = QtGui.QFormLayout()
-        
-        xsetting = NumericSettings(0, 600, ' px')
-        ysetting = NumericSettings(0, 600, ' px')
-
-        poslayout.addRow(QtGui.QLabel('X'), xsetting)
-        poslayout.addRow(QtGui.QLabel('Y'), ysetting)
-        coor.setLayout(poslayout)
-        return coor
-
-    def sinus_settings(self):
-        setting = QtGui.QGroupBox('Vlastnosti objektu')
-        sinlayout = QtGui.QFormLayout()
-        
-        self.slid_sinamp = NumericSettings(0, 300, ' px')  
-        self.slid_period = NumericSettings(-360, 360, ' °')
-        self.slid_phaze  = NumericSettings(-360, 360, ' °')
-        self.periodlen   = NumericSettings(0, 20)
-
-        sinlayout.addRow(QtGui.QLabel('Amplitúda'), self.slid_sinamp)
-        sinlayout.addRow(QtGui.QLabel('Perióda'), self.slid_period)
-        sinlayout.addRow(QtGui.QLabel('Fáza'), self.slid_phaze)
-        sinlayout.addRow(QtGui.QLabel('# Periód'), self.periodlen)
-        setting.setLayout(sinlayout) 
-
-        return setting
 
     def display_interval(self):
         val = self.slidinterval.value()
@@ -151,16 +178,15 @@ class MathShapener(QtGui.QWidget):
     def animation_setings(self):
         animgroup = QtGui.QGroupBox('Animácia')
         animlayout = QtGui.QFormLayout()
-        
+
         self.intlabel = QtGui.QLabel()
         self.slidinterval = QtGui.QSlider(QtCore.Qt.Horizontal)
-        self.slidinterval.setMinimum(10)
-        self.slidinterval.setMaximum(500)
+        self.slidinterval.setRange(10, 800)
         self.slidinterval.valueChanged.connect(self.display_interval)
         self.slidinterval.setValue(500)
         self.animplay = QtGui.QPushButton('Play/Stop')
         self.animpause = QtGui.QPushButton('Pauza')
-        
+
         animlayout.addRow(self.intlabel)
         animlayout.addRow(self.slidinterval)
         ctrl_layout = QtGui.QHBoxLayout()
@@ -171,25 +197,28 @@ class MathShapener(QtGui.QWidget):
 
         return animgroup
 
+    def shape_change(self):
+        activeitm = self.MSHAPES[self.shapesel.currentText()]
+        self.canvas.graphobj = activeitm
+        # self.rightlayout.removeItem()
+        if activeitm:
+            for setting in activeitm.settings:
+                self.rightlayout.addWidget(setting)
+
     def shape_select(self):
         topmenu = QtGui.QHBoxLayout()
-        
+
         self.shapesel = QtGui.QComboBox()
-        self.shapesel.addItems(self.MSHAPES)
-        self.isgridactive = QtGui.QCheckBox('Mriežka')
-        self.arealab = QtGui.QLabel('Plocha: ') 
+        self.shapesel.addItems([x for x in self.MSHAPES.keys()])
+        self.gridsel = QtGui.QCheckBox('Mriežka')
+        self.arealab = QtGui.QLabel('Plocha: ')
         self.circumlab = QtGui.QLabel('Obvod: ')
-       
+
         topmenu.addWidget(self.shapesel, 5)
         topmenu.addWidget(self.arealab, 2)
         topmenu.addWidget(self.circumlab, 2)
-        topmenu.addWidget(self.isgridactive, 2)
+        topmenu.addWidget(self.gridsel, 2)
         return topmenu
-
-
-    def actions_global(self):
-        # self.shapesel.activated('') = #func add widgets + their signals
-        pass
 
 
 class AppWindow(QtGui.QMainWindow):
