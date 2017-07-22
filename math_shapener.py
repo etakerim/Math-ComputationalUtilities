@@ -43,13 +43,14 @@ class Sinusoid:
 
     def __panelpos(self):
         coor = QtGui.QGroupBox('Súradnice')
-        poslayout = QtGui.QFormLayout()
+        poslayout = QtGui.QGridLayout()
 
-        xsetting = NumericSettings(-1000, 1000, ' px')
-        ysetting = NumericSettings(-1000, 1000, ' px')
-        poslayout.addRow(QtGui.QLabel('X'), xsetting)
-        poslayout.addRow(QtGui.QLabel('Y'), ysetting)
+        xsetting = NumericSettings('X', -1000, 1000, ' px')
+        ysetting = NumericSettings('Y', -1000, 1000, ' px')
         coor.setLayout(poslayout)
+        
+        xsetting.addtoGridLayout(poslayout, 0)
+        ysetting.addtoGridLayout(poslayout, 1)
 
         xsetting.valuechanged.connect(self.sig.redraw)
         ysetting.valuechanged.connect(self.sig.redraw)
@@ -61,18 +62,18 @@ class Sinusoid:
 
     def __panelcustom(self):
         setting = QtGui.QGroupBox('Vlastnosti')
-        sinlayout = QtGui.QFormLayout()
+        sinlayout = QtGui.QGridLayout()
 
-        slid_sinamp = NumericSettings(0, 600, ' px')
-        slid_period = NumericSettings(0, 660, ' °')
-        slid_phaze = NumericSettings(-360, 360, ' °')
-        slid_periodlen = NumericSettings(0, 20, 'x')
-
-        sinlayout.addRow(QtGui.QLabel('Amplitúda'), slid_sinamp)
-        sinlayout.addRow(QtGui.QLabel('Perióda'), slid_period)
-        sinlayout.addRow(QtGui.QLabel('Fáza'), slid_phaze)
-        sinlayout.addRow(QtGui.QLabel('Periód'), slid_periodlen)
+        slid_sinamp = NumericSettings('Amplitúda', 0, 600, ' px')
+        slid_period = NumericSettings('Perióda', 0, 660, ' °')
+        slid_phaze = NumericSettings('Fáza',  -360, 360, ' °')
+        slid_periodlen = NumericSettings('Periód', 0, 20, 'x')
         setting.setLayout(sinlayout)
+
+        slid_sinamp.addtoGridLayout(sinlayout, 0)
+        slid_period.addtoGridLayout(sinlayout, 1)
+        slid_phaze.addtoGridLayout(sinlayout, 2)
+        slid_periodlen.addtoGridLayout(sinlayout, 3)
 
         slid_sinamp.valuechanged.connect(self.sig.redraw)
         slid_period.valuechanged.connect(self.sig.redraw)
@@ -140,13 +141,13 @@ class Canvas(QtGui.QWidget):
         p.end()
 
 
-# TODO: Support floats
-class NumericSettings(QtGui.QHBoxLayout):
+# TODO: Align widgets + Support floats
+class NumericSettings(QtCore.QObject):
     valuechanged = QtCore.Signal()
 
-    def __init__(self, minimum, maximum, unit='', default=None):
-
+    def __init__(self, name, minimum, maximum, unit='', default=None):
         super().__init__()
+        self.name = QtGui.QLabel(name)
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.valuebox = QtGui.QSpinBox()
         if not default:
@@ -156,15 +157,18 @@ class NumericSettings(QtGui.QHBoxLayout):
         self.valuebox.setSuffix(unit)
         self.slider.setRange(minimum, maximum)
 
-        self.addWidget(self.slider, 7)
-        self.addWidget(self.valuebox, 3)
-        self.setAlignment(self.valuebox, QtCore.Qt.AlignRight)
-
         self.slider.valueChanged.connect(self.valuechanged)
         self.valuebox.valueChanged.connect(self.valuechanged)
         self.slider.valueChanged.connect(self.valuesync)
         self.valuebox.valueChanged.connect(self.slidersync)
         self.slider.setValue(default)
+
+    def addtoGridLayout(self, gridl, row):
+        if isinstance(gridl, QtGui.QGridLayout):
+            gridl.addWidget(self.name, row, 0) 
+            gridl.addWidget(self.slider, row, 2)  
+            gridl.addWidget(self.valuebox, row, 6) 
+            gridl.setAlignment(self.valuebox, QtCore.Qt.AlignRight)
 
     def slidersync(self):
         self.slider.setValue(self.valuebox.value())
