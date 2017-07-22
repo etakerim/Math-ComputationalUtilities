@@ -1,4 +1,5 @@
 import sys
+import math
 from collections import OrderedDict
 from PySide import QtCore
 from PySide import QtGui
@@ -15,7 +16,6 @@ def screen2cart(x, y, wscreen, hscreen):
 class SigReDraw(QtCore.QObject):
     redraw = QtCore.Signal()
 
-
 class GSinusoid:
     def __init__(self):
         super().__init__()
@@ -24,6 +24,16 @@ class GSinusoid:
 
     def draw(self, canvas):
         obj = QtGui.QPainterPath()
+        w, h = canvas.dim
+        center = cart2screen(self.x(), self.y(), w, h)
+        obj.moveTo(center[0], center[1])
+
+        for x in range(0, self.cntperiod() * 360):
+            x = math.radians(x)
+            y = self.amp() * math.sin(self.period() * x + self.phaze())
+            surad = cart2screen(x + self.x(), y + self.y(), w, h)
+            obj.lineTo(surad[0], surad[1])
+
         return obj
 
     def __panelpos(self):
@@ -65,8 +75,8 @@ class GSinusoid:
         slid_periodlen.valuechanged.connect(self.sig.redraw)
 
         self.amp = lambda: slid_sinamp.value()
-        self.period = lambda: slid_period.value()
-        self.phaze = lambda: slid_phaze.value()
+        self.period = lambda: math.radians(slid_period.value())
+        self.phaze = lambda: math.radians(slid_phaze.value())
         self.cntperiod = lambda: slid_periodlen.value()
 
         return setting
@@ -120,6 +130,7 @@ class Canvas(QtGui.QWidget):
             p.drawPath(self.ggrid.draw(self))
 
         if self.graphobj:
+            p.setPen(QtGui.QColor(0, 0, 255))
             p.drawPath(self.graphobj.draw(self))
         p.end()
 
@@ -240,6 +251,7 @@ class MathShapener(QtGui.QWidget):
             activeitm.sig.redraw.connect(self.canvas.update)
             for setting in activeitm.settings:
                 self.rightlayout.addWidget(setting)
+        self.canvas.update()
 
     def shape_select(self):
         topmenu = QtGui.QHBoxLayout()
