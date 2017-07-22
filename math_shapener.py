@@ -12,40 +12,62 @@ def screen2cart(x, y, wscreen, hscreen):
     return (x - wscreen // 2, -y + hscreen // 2)
 
 
-class Sinusoid:
+class SigReDraw(QtCore.QObject):
+    redraw = QtCore.Signal()
+
+
+class GSinusoid:
     def __init__(self):
-        self.settings = [self.xy_settings(), self.custom_settings()]
+        super().__init__()
+        self.sig = SigReDraw()
+        self.settings = [self.__panelpos(), self.__panelcustom()]
 
     def draw(self, canvas):
         obj = QtGui.QPainterPath()
         return obj
 
-    def xy_settings(self):
+    def __panelpos(self):
         coor = QtGui.QGroupBox('Súradnice')
         poslayout = QtGui.QFormLayout()
 
-        xsetting = NumericSettings(0, 600, ' px')
-        ysetting = NumericSettings(0, 600, ' px')
-
+        xsetting = NumericSettings(-1000, 1000, ' px')
+        ysetting = NumericSettings(-1000, 1000, ' px')
         poslayout.addRow(QtGui.QLabel('X'), xsetting)
         poslayout.addRow(QtGui.QLabel('Y'), ysetting)
         coor.setLayout(poslayout)
+
+        xsetting.valuechanged.connect(self.sig.redraw)
+        ysetting.valuechanged.connect(self.sig.redraw)
+
+        self.x = lambda: xsetting.value()
+        self.y = lambda: ysetting.value()
+
         return coor
 
-    def custom_settings(self):
+    def __panelcustom(self):
         setting = QtGui.QGroupBox('Vlastnosti')
         sinlayout = QtGui.QFormLayout()
 
-        self.slid_sinamp = NumericSettings(0, 300, ' px')
-        self.slid_period = NumericSettings(-360, 360, ' °')
-        self.slid_phaze = NumericSettings(-360, 360, ' °')
-        self.periodlen = NumericSettings(0, 20, 'x')
+        slid_sinamp = NumericSettings(0, 300, ' px')
+        slid_period = NumericSettings(-360, 360, ' °')
+        slid_phaze = NumericSettings(-360, 360, ' °')
+        slid_periodlen = NumericSettings(0, 20, 'x')
 
-        sinlayout.addRow(QtGui.QLabel('Amplitúda'), self.slid_sinamp)
-        sinlayout.addRow(QtGui.QLabel('Perióda'), self.slid_period)
-        sinlayout.addRow(QtGui.QLabel('Fáza'), self.slid_phaze)
-        sinlayout.addRow(QtGui.QLabel('Periód'), self.periodlen)
+        sinlayout.addRow(QtGui.QLabel('Amplitúda'), slid_sinamp)
+        sinlayout.addRow(QtGui.QLabel('Perióda'), slid_period)
+        sinlayout.addRow(QtGui.QLabel('Fáza'), slid_phaze)
+        sinlayout.addRow(QtGui.QLabel('Periód'), slid_periodlen)
         setting.setLayout(sinlayout)
+
+        slid_sinamp.valuechanged.connect(self.sig.redraw)
+        slid_period.valuechanged.connect(self.sig.redraw)
+        slid_phaze.valuechanged.connect(self.sig.redraw)
+        slid_periodlen.valuechanged.connect(self.sig.redraw)
+
+        self.amp = lambda: slid_sinamp.value()
+        self.period = lambda: slid_period.value()
+        self.phaze = lambda: slid_phaze.value()
+        self.cntperiod = lambda: slid_periodlen.value()
 
         return setting
 
@@ -103,8 +125,11 @@ class Canvas(QtGui.QWidget):
 
 
 class NumericSettings(QtGui.QHBoxLayout):
+    valuechanged = QtCore.Signal()
+
     def __init__(self, minimum, maximum,
                  unit=' ', func_valuser=lambda x: x):
+
         super().__init__()
         self.valuelab = QtGui.QLabel()
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
@@ -120,11 +145,10 @@ class NumericSettings(QtGui.QHBoxLayout):
         self.addWidget(self.valuelab, 3)
         self.setAlignment(self.valuelab, QtCore.Qt.AlignRight)
 
+        self.slider.valueChanged.connect(self.valuechanged)
+
     def value_show(self):
         self.valuelab.setText('{}{}'.format(self.value(), self.unit))
-
-    def slot_datachange(self, func):
-        self.slider.valueChanged.connect(func)
 
     def value(self):
         return self.func_valuser(self.slider.value())
@@ -135,7 +159,7 @@ class MathShapener(QtGui.QWidget):
         super().__init__()
         self.MSHAPES = OrderedDict([
                ('--- Vyber útvar --- ', None),
-               ('Sínusoida', Sinusoid()),
+               ('Sínusoida', GSinusoid()),
                ('Lissajousova krivka', None),
                ('Vektor', None),
                ('Kruh', None),
@@ -199,9 +223,21 @@ class MathShapener(QtGui.QWidget):
 
     def shape_change(self):
         activeitm = self.MSHAPES[self.shapesel.currentText()]
+
+        # Change drawn object
+        olditm = self.canvas.graphobj
         self.canvas.graphobj = activeitm
-        # self.rightlayout.removeItem()
+
+        # Setup signals between Canvas() <--> DrawnObj()
+        # Change Settings layout self <--> DrawnObj()
+        if olditm:
+            olditm.sig.redraw.disconnect()
+            # Removing from beginning shifts items so go backwards
+            for i in reversed(range(self.rightlayout.count())):
+                self.rightlayout.takeAt(i).widget().setParent(None)
+
         if activeitm:
+            activeitm.sig.redraw.connect(self.canvas.update)
             for setting in activeitm.settings:
                 self.rightlayout.addWidget(setting)
 
