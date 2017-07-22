@@ -16,21 +16,25 @@ def screen2cart(x, y, wscreen, hscreen):
 class SigReDraw(QtCore.QObject):
     redraw = QtCore.Signal()
 
-class GSinusoid:
+class Sinusoid:
     def __init__(self):
         super().__init__()
         self.sig = SigReDraw()
         self.settings = [self.__panelpos(), self.__panelcustom()]
 
+    def sine_curve(self, x):
+        return self.amp() * math.sin(self.period() * x + self.phaze())
+
     def draw(self, canvas):
         obj = QtGui.QPainterPath()
         w, h = canvas.dim
-        center = cart2screen(self.x(), self.y(), w, h)
-        obj.moveTo(center[0], center[1])
+        y = self.sine_curve(0)
+        start = cart2screen(self.x(), y + self.y(), w, h)
+        obj.moveTo(start[0], start[1])
 
-        for x in range(0, self.cntperiod() * 360):
+        for x in range(0, self.cntperiod() * int(math.degrees(self.period()))):
             x = math.radians(x)
-            y = self.amp() * math.sin(self.period() * x + self.phaze())
+            y = self.sine_curve(x)
             surad = cart2screen(x + self.x(), y + self.y(), w, h)
             obj.lineTo(surad[0], surad[1])
 
@@ -58,8 +62,8 @@ class GSinusoid:
         setting = QtGui.QGroupBox('Vlastnosti')
         sinlayout = QtGui.QFormLayout()
 
-        slid_sinamp = NumericSettings(0, 300, ' px')
-        slid_period = NumericSettings(-360, 360, ' °')
+        slid_sinamp = NumericSettings(0, 600, ' px')
+        slid_period = NumericSettings(0, 660, ' °')
         slid_phaze = NumericSettings(-360, 360, ' °')
         slid_periodlen = NumericSettings(0, 20, 'x')
 
@@ -170,7 +174,7 @@ class MathShapener(QtGui.QWidget):
         super().__init__()
         self.MSHAPES = OrderedDict([
                ('--- Vyber útvar --- ', None),
-               ('Sínusoida', GSinusoid()),
+               ('Sínusoida', Sinusoid()),
                ('Lissajousova krivka', None),
                ('Vektor', None),
                ('Kruh', None),
