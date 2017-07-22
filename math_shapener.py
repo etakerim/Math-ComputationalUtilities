@@ -16,6 +16,7 @@ def screen2cart(x, y, wscreen, hscreen):
 class SigReDraw(QtCore.QObject):
     redraw = QtCore.Signal()
 
+
 class Sinusoid:
     def __init__(self):
         super().__init__()
@@ -139,34 +140,40 @@ class Canvas(QtGui.QWidget):
         p.end()
 
 
+# TODO: Support floats
 class NumericSettings(QtGui.QHBoxLayout):
     valuechanged = QtCore.Signal()
 
-    def __init__(self, minimum, maximum,
-                 unit=' ', func_valuser=lambda x: x):
+    def __init__(self, minimum, maximum, unit='', default=None):
 
         super().__init__()
-        self.valuelab = QtGui.QLabel()
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
-        self.func_valuser = func_valuser
-        self.unit = unit
+        self.valuebox = QtGui.QSpinBox()
+        if not default:
+            default = (minimum + maximum) // 2
 
+        self.valuebox.setRange(minimum, maximum)
+        self.valuebox.setSuffix(unit)
         self.slider.setRange(minimum, maximum)
-        self.slider.valueChanged.connect(self.value_show)
-        self.slider.setValue((maximum + minimum) // 2)
-        self.slider.valueChanged.emit(0)
 
         self.addWidget(self.slider, 7)
-        self.addWidget(self.valuelab, 3)
-        self.setAlignment(self.valuelab, QtCore.Qt.AlignRight)
+        self.addWidget(self.valuebox, 3)
+        self.setAlignment(self.valuebox, QtCore.Qt.AlignRight)
 
         self.slider.valueChanged.connect(self.valuechanged)
+        self.valuebox.valueChanged.connect(self.valuechanged)
+        self.slider.valueChanged.connect(self.valuesync)
+        self.valuebox.valueChanged.connect(self.slidersync)
+        self.slider.setValue(default)
 
-    def value_show(self):
-        self.valuelab.setText('{}{}'.format(self.value(), self.unit))
+    def slidersync(self):
+        self.slider.setValue(self.valuebox.value())
+
+    def valuesync(self):
+        self.valuebox.setValue(self.slider.value())
 
     def value(self):
-        return self.func_valuser(self.slider.value())
+        return self.slider.value()
 
 
 class MathShapener(QtGui.QWidget):
@@ -285,5 +292,5 @@ class AppWindow(QtGui.QMainWindow):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    window = AppWindow('Mathematical Shape Sharpener', (600, 400))
+    window = AppWindow('Mathematical Shape Sharpener', (640, 480))
     app.exec_()
