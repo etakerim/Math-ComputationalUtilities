@@ -24,7 +24,7 @@ class Sinusoid:
         start = canvas.cart2screen(self.x(), y + self.y())
         obj.moveTo(start[0], start[1])
 
-        for x in range(0, int(self.cntperiod() * math.degrees(self.period()))):
+        for x in range(0, self.repeat()):
             x = math.radians(x)
             y = self.sine_curve(x)
             surad = canvas.cart2screen(x + self.x(), y + self.y())
@@ -36,8 +36,8 @@ class Sinusoid:
         coor = QtGui.QGroupBox('Súradnice')
         poslayout = QtGui.QGridLayout()
 
-        xsetting = NumericSettings('X', -1000, 1000, ' px')
-        ysetting = NumericSettings('Y', -1000, 1000, ' px')
+        xsetting = NumericSettings('X', -1000, 1000)
+        ysetting = NumericSettings('Y', -1000, 1000)
         coor.setLayout(poslayout)
 
         xsetting.addtoGridLayout(poslayout, 0)
@@ -55,26 +55,27 @@ class Sinusoid:
         setting = QtGui.QGroupBox('Vlastnosti')
         sinlayout = QtGui.QGridLayout()
 
-        slid_sinamp = NumericSettings('Amplitúda', 0, 600, ' px')
-        slid_period = NumericSettings('Perióda', 0, 660, ' °')
-        slid_phaze = NumericSettings('Fáza',  -360, 360, ' °')
-        slid_periodlen = NumericSettings('Periód', 0, 20, 'x')
+        slid_sinamp = NumericSettings('Amplitúda', 1, 400)
+        slid_period = NumericSettings('Perióda', 1, 3600, unit='°', default=360)
+        slid_phaze = NumericSettings('Fáza',  -360, 360, unit='°', default=0)
+        slid_repeat = NumericSettings('Opakovanie', 1, 20, 'x', default=1)
         setting.setLayout(sinlayout)
 
         slid_sinamp.addtoGridLayout(sinlayout, 0)
         slid_period.addtoGridLayout(sinlayout, 1)
         slid_phaze.addtoGridLayout(sinlayout, 2)
-        slid_periodlen.addtoGridLayout(sinlayout, 3)
+        slid_repeat.addtoGridLayout(sinlayout, 3)
 
         slid_sinamp.valuechanged.connect(self.sig.redraw)
         slid_period.valuechanged.connect(self.sig.redraw)
         slid_phaze.valuechanged.connect(self.sig.redraw)
-        slid_periodlen.valuechanged.connect(self.sig.redraw)
+        slid_repeat.valuechanged.connect(self.sig.redraw)
 
         self.amp = lambda: slid_sinamp.value()
-        self.period = lambda: math.radians(slid_period.value())
+        self.period = lambda: math.pi / math.radians(slid_period.value())
         self.phaze = lambda: math.radians(slid_phaze.value())
-        self.cntperiod = lambda: slid_periodlen.value()
+        self.repeat = lambda: int(slid_repeat.value() * 360
+                                  * (self.period() ** -1))
 
         return setting
 
