@@ -128,7 +128,6 @@ class Canvas(QtGui.QWidget):
         p = QtGui.QPainter()
 
         p.begin(self)
-        # p.setRenderHint(QtGui.QPainter.Antialiasing)
         p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white))
 
         if self.isgridactive:
@@ -136,6 +135,7 @@ class Canvas(QtGui.QWidget):
             p.drawPath(self.ggrid.draw(self))
 
         if self.graphobj:
+            p.setRenderHint(QtGui.QPainter.Antialiasing)
             p.setPen(QtGui.QColor(0, 0, 255))
             p.drawPath(self.graphobj.draw(self))
         p.end()
