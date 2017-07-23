@@ -99,7 +99,7 @@ class Canvas(QtGui.QWidget):
     def coordinate_grid(self):
         grid = QtGui.QPainterPath()
         w, h = self.size().width() // 2, self.size().height() // 2
-        detail = 100
+        detail = int(100 / self.zoomfaktor)
 
         for x in range(-w + (w % detail), w, detail):
             grid.moveTo(x, -h)
@@ -108,6 +108,7 @@ class Canvas(QtGui.QWidget):
         for y in range(-h + (h % detail), h, detail):
             grid.moveTo(-w, y)
             grid.lineTo(w, y)
+
         return grid
 
     def paintEvent(self, event):
@@ -211,7 +212,6 @@ class MathShapener(QtGui.QWidget):
         self.zoom_slid.valuechanged.connect(
                 lambda: self.canvas.zoom(self.zoom_slid.value()))
 
-
     def display_interval(self):
         val = self.slidinterval.value()
         self.intlabel.setText('Interval: {} ms'.format(val))
@@ -220,8 +220,8 @@ class MathShapener(QtGui.QWidget):
         canvgroup = QtGui.QGroupBox('Kresliaca plocha')
         canvlayout = QtGui.QGridLayout()
 
-        self.zoom_slid = NumericSettings('Priblíženie', 1, 1000, default=1, unit='x')
         self.gridsel = QtGui.QCheckBox('Mriežka')
+        self.zoom_slid = NumericSettings('Priblíženie', 1, 100, default=1, unit='x')
         
         canvlayout.addWidget(self.gridsel, 0, 0)
         self.zoom_slid.addtoGridLayout(canvlayout, 1)
