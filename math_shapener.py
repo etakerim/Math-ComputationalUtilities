@@ -83,7 +83,7 @@ class CoordinateGrid:
     def draw(self, canvas):
         grid = QtGui.QPainterPath()
         w, h = canvas.dim
-        origin = canvas.cart2screen(0, 0, w, h)
+        origin = canvas.cart2screen(0, 0)
         detail = 50
 
         for x in range(origin[0] % detail, w, detail):
