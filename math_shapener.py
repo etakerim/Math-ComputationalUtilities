@@ -5,14 +5,6 @@ from PySide import QtCore
 from PySide import QtGui
 
 
-def cart2screen(x, y, wscreen, hscreen):
-    return (x + wscreen // 2, -y + hscreen // 2)
-
-
-def screen2cart(x, y, wscreen, hscreen):
-    return (x - wscreen // 2, -y + hscreen // 2)
-
-
 class SigReDraw(QtCore.QObject):
     redraw = QtCore.Signal()
 
@@ -28,15 +20,14 @@ class Sinusoid:
 
     def draw(self, canvas):
         obj = QtGui.QPainterPath()
-        w, h = canvas.dim
         y = self.sine_curve(0)
-        start = cart2screen(self.x(), y + self.y(), w, h)
+        start = canvas.cart2screen(self.x(), y + self.y())
         obj.moveTo(start[0], start[1])
 
         for x in range(0, int(self.cntperiod() * math.degrees(self.period()))):
             x = math.radians(x)
             y = self.sine_curve(x)
-            surad = cart2screen(x + self.x(), y + self.y(), w, h)
+            surad = canvas.cart2screen(x + self.x(), y + self.y())
             obj.lineTo(surad[0], surad[1])
 
         return obj
@@ -92,7 +83,7 @@ class CoordinateGrid:
     def draw(self, canvas):
         grid = QtGui.QPainterPath()
         w, h = canvas.dim
-        origin = cart2screen(0, 0, w, h)
+        origin = canvas.cart2screen(0, 0, w, h)
         detail = 50
 
         for x in range(origin[0] % detail, w, detail):
@@ -118,6 +109,14 @@ class Canvas(QtGui.QWidget):
     @property
     def dim(self):
         return (self.size().width(), self.size().height())
+
+    def cart2screen(self, x, y):
+        wscreen, hscreen = self.dim
+        return (x + wscreen // 2, -y + hscreen // 2)
+
+    def screen2cart(self, x, y):
+        wscreen, hscreen = self.dim
+        return (x - wscreen // 2, -y + hscreen // 2)
 
     def grid_activate(self):
         self.isgridactive = not self.isgridactive
