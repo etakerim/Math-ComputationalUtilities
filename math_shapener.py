@@ -83,6 +83,7 @@ class Canvas(QtGui.QWidget):
         super().__init__()
         self.isgridactive = False
         self.graphobj = None
+        self.zoomfaktor = 1
 
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
@@ -91,10 +92,14 @@ class Canvas(QtGui.QWidget):
         self.isgridactive = not self.isgridactive
         self.update()
 
+    def zoom(self, faktor):
+        self.zoomfaktor = faktor
+        self.update()
+
     def coordinate_grid(self):
         grid = QtGui.QPainterPath()
         w, h = self.size().width() // 2, self.size().height() // 2
-        detail = 50
+        detail = 100
 
         for x in range(-w + (w % detail), w, detail):
             grid.moveTo(x, -h)
@@ -105,14 +110,13 @@ class Canvas(QtGui.QWidget):
             grid.lineTo(w, y)
         return grid
 
-
     def paintEvent(self, event):
         p = QtGui.QPainter()
 
         p.begin(self)
         p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white))
         p.translate(self.size().width() // 2, self.size().height() // 2)
-        p.scale(1, -1)
+        p.scale(self.zoomfaktor, -self.zoomfaktor)
 
         if self.isgridactive:
             p.setPen(QtGui.QColor(110, 110, 110))
@@ -191,25 +195,38 @@ class MathShapener(QtGui.QWidget):
         self.canvas = Canvas()
         self.leftlayout.addWidget(self.canvas)
 
-        # Udalosti
-        self.gridsel.stateChanged.connect(self.canvas.grid_activate)
-        self.shapesel.currentIndexChanged.connect(self.shape_change)
-
         self.rightlayout = QtGui.QVBoxLayout()
         self.rightlayout.setAlignment(QtCore.Qt.AlignTop)
         self.shape_change()
 
+        self.rightlayout.addWidget(self.canvas_settings())
         self.rightlayout.addWidget(self.animation_setings())
-        self.savebtn = QtGui.QPushButton('Uložiť obrázok')
-        self.rightlayout.addWidget(self.savebtn)
-
         self.mainlayout.addLayout(self.leftlayout, 6)
         self.mainlayout.addLayout(self.rightlayout, 2)
         self.setLayout(self.mainlayout)
+        
+        # Udalosti
+        self.gridsel.stateChanged.connect(self.canvas.grid_activate)
+        self.shapesel.currentIndexChanged.connect(self.shape_change)
+        self.zoom_slid.valuechanged.connect(
+                lambda: self.canvas.zoom(self.zoom_slid.value()))
+
 
     def display_interval(self):
         val = self.slidinterval.value()
         self.intlabel.setText('Interval: {} ms'.format(val))
+
+    def canvas_settings(self):
+        canvgroup = QtGui.QGroupBox('Kresliaca plocha')
+        canvlayout = QtGui.QGridLayout()
+
+        self.zoom_slid = NumericSettings('Priblíženie', 1, 1000, default=1, unit='x')
+        self.gridsel = QtGui.QCheckBox('Mriežka')
+        
+        canvlayout.addWidget(self.gridsel, 0, 0)
+        self.zoom_slid.addtoGridLayout(canvlayout, 1)
+        canvgroup.setLayout(canvlayout)
+        return canvgroup
 
     def animation_setings(self):
         animgroup = QtGui.QGroupBox('Animácia')
@@ -259,14 +276,14 @@ class MathShapener(QtGui.QWidget):
 
         self.shapesel = QtGui.QComboBox()
         self.shapesel.addItems([x for x in self.MSHAPES.keys()])
-        self.gridsel = QtGui.QCheckBox('Mriežka')
         self.arealab = QtGui.QLabel('Plocha: ')
         self.circumlab = QtGui.QLabel('Obvod: ')
-
+        self.savebtn = QtGui.QPushButton('Uložiť')
+        
         topmenu.addWidget(self.shapesel, 5)
         topmenu.addWidget(self.arealab, 2)
         topmenu.addWidget(self.circumlab, 2)
-        topmenu.addWidget(self.gridsel, 2)
+        topmenu.addWidget(self.savebtn, 2)
         return topmenu
 
 
