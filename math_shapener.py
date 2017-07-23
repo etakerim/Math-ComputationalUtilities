@@ -33,7 +33,7 @@ class Sinusoid:
         start = cart2screen(self.x(), y + self.y(), w, h)
         obj.moveTo(start[0], start[1])
 
-        for x in range(0, self.cntperiod() * int(math.degrees(self.period()))):
+        for x in range(0, int(self.cntperiod() * math.degrees(self.period()))):
             x = math.radians(x)
             y = self.sine_curve(x)
             surad = cart2screen(x + self.x(), y + self.y(), w, h)
@@ -48,7 +48,7 @@ class Sinusoid:
         xsetting = NumericSettings('X', -1000, 1000, ' px')
         ysetting = NumericSettings('Y', -1000, 1000, ' px')
         coor.setLayout(poslayout)
-        
+
         xsetting.addtoGridLayout(poslayout, 0)
         ysetting.addtoGridLayout(poslayout, 1)
 
@@ -141,21 +141,24 @@ class Canvas(QtGui.QWidget):
         p.end()
 
 
-# TODO: Align widgets + Support floats
 class NumericSettings(QtCore.QObject):
     valuechanged = QtCore.Signal()
 
-    def __init__(self, name, minimum, maximum, unit='', default=None):
+    def __init__(self, name, minimum, maximum,
+                 unit='', step=1, default=None):
         super().__init__()
         self.name = QtGui.QLabel(name)
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
-        self.valuebox = QtGui.QSpinBox()
+        self.valuebox = QtGui.QDoubleSpinBox()
+        self.dpislid = step ** -1
         if not default:
             default = (minimum + maximum) // 2
 
         self.valuebox.setRange(minimum, maximum)
+        self.valuebox.setSingleStep(step)
+        self.valuebox.setDecimals(math.ceil(math.log10(self.dpislid)))
         self.valuebox.setSuffix(unit)
-        self.slider.setRange(minimum, maximum)
+        self.slider.setRange(minimum, maximum * self.dpislid)
 
         self.slider.valueChanged.connect(self.valuechanged)
         self.valuebox.valueChanged.connect(self.valuechanged)
@@ -165,19 +168,18 @@ class NumericSettings(QtCore.QObject):
 
     def addtoGridLayout(self, gridl, row):
         if isinstance(gridl, QtGui.QGridLayout):
-            gridl.addWidget(self.name, row, 0) 
-            gridl.addWidget(self.slider, row, 2)  
-            gridl.addWidget(self.valuebox, row, 6) 
-            gridl.setAlignment(self.valuebox, QtCore.Qt.AlignRight)
+            gridl.addWidget(self.name, row, 0)
+            gridl.addWidget(self.slider, row, 1)
+            gridl.addWidget(self.valuebox, row, 2)
 
     def slidersync(self):
-        self.slider.setValue(self.valuebox.value())
+        self.slider.setValue(self.valuebox.value() * self.dpislid)
 
     def valuesync(self):
-        self.valuebox.setValue(self.slider.value())
+        self.valuebox.setValue(self.slider.value() / self.dpislid)
 
     def value(self):
-        return self.slider.value()
+        return self.valuebox.value()
 
 
 class MathShapener(QtGui.QWidget):
