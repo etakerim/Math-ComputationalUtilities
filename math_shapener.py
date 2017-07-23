@@ -18,17 +18,15 @@ class Sinusoid:
     def sine_curve(self, x):
         return self.amp() * math.sin(self.period() * x + self.phaze())
 
-    def draw(self, canvas):
+    def draw(self):
         obj = QtGui.QPainterPath()
         y = self.sine_curve(0)
-        start = canvas.cart2screen(self.x(), y + self.y())
-        obj.moveTo(start[0], start[1])
+        obj.moveTo(self.x(), y + self.y())
 
         for x in range(0, self.repeat()):
             x = math.radians(x)
             y = self.sine_curve(x)
-            surad = canvas.cart2screen(x + self.x(), y + self.y())
-            obj.lineTo(surad[0], surad[1])
+            obj.lineTo(x + self.x(), y + self.y())
 
         return obj
 
@@ -80,64 +78,50 @@ class Sinusoid:
         return setting
 
 
-class CoordinateGrid:
-    def draw(self, canvas):
-        grid = QtGui.QPainterPath()
-        w, h = canvas.dim
-        origin = canvas.cart2screen(0, 0)
-        detail = 50
-
-        for x in range(origin[0] % detail, w, detail):
-            grid.moveTo(x, 0)
-            grid.lineTo(x, h)
-
-        for y in range(origin[1] % detail, h, detail):
-            grid.moveTo(0, y)
-            grid.lineTo(w, y)
-        return grid
-
-
 class Canvas(QtGui.QWidget):
     def __init__(self):
         super().__init__()
         self.isgridactive = False
-        self.ggrid = CoordinateGrid()
         self.graphobj = None
 
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
 
-    @property
-    def dim(self):
-        return (self.size().width(), self.size().height())
-
-    def cart2screen(self, x, y):
-        wscreen, hscreen = self.dim
-        return (x + wscreen // 2, -y + hscreen // 2)
-
-    def screen2cart(self, x, y):
-        wscreen, hscreen = self.dim
-        return (x - wscreen // 2, -y + hscreen // 2)
-
     def grid_activate(self):
         self.isgridactive = not self.isgridactive
         self.update()
 
+    def coordinate_grid(self):
+        grid = QtGui.QPainterPath()
+        w, h = self.size().width() // 2, self.size().height() // 2
+        detail = 50
+
+        for x in range(-w + (w % detail), w, detail):
+            grid.moveTo(x, -h)
+            grid.lineTo(x, h)
+
+        for y in range(-h + (h % detail), h, detail):
+            grid.moveTo(-w, y)
+            grid.lineTo(w, y)
+        return grid
+
+
     def paintEvent(self, event):
-        w, h = self.dim
         p = QtGui.QPainter()
 
         p.begin(self)
         p.fillRect(event.rect(), QtGui.QColor(QtCore.Qt.white))
+        p.translate(self.size().width() // 2, self.size().height() // 2)
+        p.scale(1, -1)
 
         if self.isgridactive:
             p.setPen(QtGui.QColor(110, 110, 110))
-            p.drawPath(self.ggrid.draw(self))
+            p.drawPath(self.coordinate_grid())
 
-        if self.graphobj:
-            p.setRenderHint(QtGui.QPainter.Antialiasing)
+        if self.graphobj: 
+            p.setRenderHint(QtGui.QPainter.Antialiasing)    
             p.setPen(QtGui.QColor(0, 0, 255))
-            p.drawPath(self.graphobj.draw(self))
+            p.drawPath(self.graphobj.draw())
         p.end()
 
 
