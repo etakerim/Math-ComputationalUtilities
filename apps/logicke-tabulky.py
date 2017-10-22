@@ -150,11 +150,14 @@ def vyries_logiku(rpn):
             var.append(lex.lexem)
 
         elif lex.typ == OPERATOR:
-            op2 = logickatab[var.pop()].vektor
+            op2_i = var.pop()
+            op2 = logickatab[op2_i].vektor
             if lex.lexem == NOT:
                 c = v_not(op2)
+                fmt = '{}{}'.format(NOT, logickatab[op2_i].nadpis)
             else:
-                op1 = logickatab[var.pop()].vektor
+                op1_i = var.pop()
+                op1 = logickatab[op1_i].vektor
                 if lex.lexem == AND:
                     c = v_and(op1, op2)
 
@@ -166,26 +169,44 @@ def vyries_logiku(rpn):
 
                 elif lex.lexem == EKV:
                     c = v_ekv(op1, op2)
+                fmt = '({} {} {})'.format(logickatab[op1_i].nadpis, lex.lexem,
+                                          logickatab[op2_i].nadpis)
 
             var.append(len(logickatab))
-            logickatab.append(TabStlpec(len(logickatab), c))
+            logickatab.append(TabStlpec(fmt, c))
 
     return logickatab
 
 
-def vytlac_stlpce(logtab):
-    for i in logtab:
-        print('|{:^10.10}'.format(str(i.nadpis)), end="")
-    print('|\n' + '-' * (11 * len(logtab)))
+def horiz_oddelovac(sirka, n_stlpcov):
+    tabsirka = (sirka + 1) * n_stlpcov - 1
+    print('|' + '-' * tabsirka + '|')
 
+
+def vytlac_stlpce(logtab):
+    # Napíše číslovanú hlavičku
+    n_stlpcov = len(logtab)
+
+    horiz_oddelovac(6, n_stlpcov)
+    for i in range(n_stlpcov):
+        print('|{:^6.6}'.format(str(i)), end="")
+    print('|')
+    horiz_oddelovac(6, n_stlpcov)
+
+    # Napíše do stĺpcov logické hodnoty
     for s in range(len(logtab[0].vektor)):
-        for r in range(len(logtab)):
-            print('|{:^10.10}'.format(str(int(logtab[r].vektor[s]))), end="")
+        for r in range(n_stlpcov):
+            print('|{:^6.6}'.format(str(int(logtab[r].vektor[s]))), end="")
         print('|')
+    horiz_oddelovac(6, n_stlpcov)
+
+    # Napíše legendu k číslovaným stĺpcom
+    print('\n-------Legenda--------')
+    for i, stlpec in enumerate(logtab):
+        print('{:6.6} | {}'.format(str(i), stlpec.nadpis))
 
 
 if __name__ == '__main__':
     vstup = input('> ')
     rpn = shunting_yard(vstup)
-    print(rpn)
     vytlac_stlpce(vyries_logiku(rpn))
