@@ -69,10 +69,13 @@ def shunting_yard(vyraz):
             if posledny(opzasobnik) == NOT:
                 fronta.append(opzasobnik.pop())
 
-        elif token.typ in [OPERATOR, OTV_ZATVORKA]:
+        elif token.typ == OPERATOR:
             opzasobnik.append(token)
 
-        elif token.typ == ZAT_ZATVORKA:
+        elif token.lexem == OTV_ZATVORKA:
+            opzasobnik.append(token)
+
+        elif token.lexem == ZAT_ZATVORKA:
             while posledny(opzasobnik) != OTV_ZATVORKA:
                 fronta.append(opzasobnik.pop())
             opzasobnik.pop()
@@ -184,4 +187,5 @@ def vytlac_stlpce(logtab):
 if __name__ == '__main__':
     vstup = input('> ')
     rpn = shunting_yard(vstup)
+    print(rpn)
     vytlac_stlpce(vyries_logiku(rpn))
