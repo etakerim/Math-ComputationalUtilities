@@ -1,4 +1,10 @@
+# Notice:
+# This module is meant to be used only for demostrational purposes
+# regarding calculations with simple 2D vectors.
+# If you are searching for something extesible and fast, you are
+# better of with NUMPY library
 import math
+
 
 class Vector2D:
 
@@ -20,7 +26,7 @@ class Vector2D:
         x = self.x * scalar
         y = self.y * scalar
         return Vector2D(x, y)
-    
+
     def __rmul__(self, other):
         return self.__mul__(other)
 
@@ -39,16 +45,17 @@ class Vector2D:
         return ("Vector2D(x={:.2f}, y={:.2f})".format(self.x, self.y))
 
     def angle(self, other):
-        return math.acos(self.dot(other) 
-                         / (self.__abs__() * other.__abs__()))
+        return math.acos(self.dot(other) /
+                         (self.__abs__() * other.__abs__()))
 
     def rotate(self, angle):
         x = self.x * math.cos(angle) - self.y * math.sin(angle)
         y = self.x * math.sin(angle) + self.y * math.cos(angle)
         return Vector2D(x, y)
-        
+
     def is_perpendicular(self, other):
         return self.__mul__(other) == 0
+
     @property
     def data(self):
         return (self.x, self.y)
