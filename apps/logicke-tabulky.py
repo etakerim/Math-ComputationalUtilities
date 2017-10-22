@@ -1,9 +1,22 @@
+from collections import namedtuple
+
 OPERATOR = 'op'
 PREMENNA = 'var'
-ODKAZ    = 'ref'
+ODKAZ = 'ref'
 ZATVORKA = 'par'
+NOT = '~'
+AND = '&'
+OR = '|'
+IMPL = '=>'
+EKV = '<=>'
+OTV_ZATVORKA = '('
+ZAT_ZATVORKA = ')'
 
-def lex_nacitaj(vyraz):
+Token = namedtuple('Token', ['typ', 'lexem'])
+TabStlpec = namedtuple('TabStlpec', ['nadpis', 'vektor'])
+
+
+def token_nacitaj(vyraz):
     i = 0
     while i < len(vyraz):
         symbol = vyraz[i]
@@ -12,160 +25,163 @@ def lex_nacitaj(vyraz):
             pass
 
         elif symbol.isalpha():
-            ident = ""
+            ident = ''
             while i < len(vyraz) and vyraz[i].isalpha():
                 ident += vyraz[i]
                 i += 1
             i -= 1
-            yield [PREMENNA, ident]
+            yield Token(PREMENNA, ident)
 
-        elif symbol in ['~', '&', '|']:
-            yield [OPERATOR, symbol]
+        elif symbol in [NOT, AND, OR]:
+            yield Token(OPERATOR, symbol)
 
-        elif symbol in ['=', '<']:
-            token = '=>' if symbol == '=' else '<=>'
+        elif symbol in [IMPL[0], EKV[0]]:
+            lex = IMPL if symbol == IMPL[0] else EKV
 
             # Technika lookahead pre viacznakové symboly
-            if len(vyraz) - i >= len(token):
-                if vyraz[i: i + len(token)] == token:
-                    yield [OPERATOR, token]
-            i += len(token) - 1
+            if len(vyraz) - i >= len(lex):
+                if vyraz[i: i + len(lex)] == lex:
+                    yield Token(OPERATOR, lex)
+            i += len(lex) - 1
 
-        elif symbol in ['(', ')']:
-            yield [ZATVORKA, symbol]
+        elif symbol in [OTV_ZATVORKA, ZAT_ZATVORKA]:
+            yield Token(ZATVORKA, symbol)
 
         else:
-            pass # Chyba neočakavaný token
+            pass   # Chyba neočakavaný token
         i += 1
 
-def posledny(tokeny):
-    if len(tokeny) < 1:
+
+def posledny(token):
+    if len(token) < 1:
         return ''
     else:
-        return tokeny[-1][1]
+        return token[-1].lexem
+
 
 def shunting_yard(vyraz):
     fronta = []
     opzasobnik = []
 
-    for lex in lex_nacitaj(vstup):
-        if lex[0] == PREMENNA:
-            fronta.append(lex)
-            if posledny(opzasobnik) == '~':
+    for token in token_nacitaj(vstup):
+        if token.typ == PREMENNA:
+            fronta.append(token)
+            if posledny(opzasobnik) == NOT:
                 fronta.append(opzasobnik.pop())
-        elif lex[0] == OPERATOR:
-            opzasobnik.append(lex)
-        elif lex[1] == '(':
-            opzasobnik.append(lex)
-        elif lex[1] == ')':
-            while posledny(opzasobnik) != '(':
+
+        elif token.typ in [OPERATOR, OTV_ZATVORKA]:
+            opzasobnik.append(token)
+
+        elif token.typ == ZAT_ZATVORKA:
+            while posledny(opzasobnik) != OTV_ZATVORKA:
                 fronta.append(opzasobnik.pop())
             opzasobnik.pop()
 
     for op in reversed(opzasobnik):
         fronta.append(op)
+
     return fronta
 
-def tab_symbolov(rpn):
+
+def tabulka_symbolov(rpn):
     symtab = []
     # Získa všetky premenné
     for i in range(len(rpn)):
-        if rpn[i][0] == PREMENNA and rpn[i][1] not in symtab:
-            symtab.append(rpn[i][1])
+        if rpn[i].typ == PREMENNA and rpn[i].lexem not in symtab:
+            symtab.append(rpn[i].lexem)
     symtab.sort()
 
+    # Nahradí ich symbolickými odkazmi na stlpce v tabulke symbolov
     symdict = {symtab[i]: i for i in range(len(symtab))}
     for i in range(len(rpn)):
-        if rpn[i][0] == PREMENNA:
-            rpn[i] = [ODKAZ, symdict[rpn[i][1]]]
+        if rpn[i].typ == PREMENNA:
+            rpn[i] = Token(ODKAZ, symdict[rpn[i].lexem])
 
-    print(rpn)
     n = 2 ** len(symtab)
     zmena = n // 2
     stav = True
 
     # Striedavo generuje 0/1 aby vycerpal vsetky kombinacie
     for i in range(len(symtab)):
-        symtab[i] = [symtab[i], []]
+        symtab[i] = TabStlpec(symtab[i], [])
         for o in range(n):
             if o % zmena == 0:
                 stav = not stav
-            symtab[i][1].append(stav)
+            symtab[i].vektor.append(stav)
         zmena //= 2
     return symtab
 
+
 def v_not(A):
     return [not A[i] for i in range(len(A))]
+
 
 def v_and(A, B):
     if len(A) == len(B):
         return [(A[i] and B[i]) for i in range(len(A))]
 
+
 def v_or(A, B):
     if len(A) == len(B):
         return [(A[i] or B[i]) for i in range(len(A))]
+
 
 def v_impl(A, B):
     if len(A) == len(B):
         return [((not A[i]) or B[i]) for i in range(len(A))]
 
-def v_ekviv(A, B):
+
+def v_ekv(A, B):
     if len(A) == len(B):
         return [(A[i] and B[i]) or (not A[i] and not B[i])
                 for i in range(len(A))]
 
+
 def vyries_logiku(rpn):
     var = []
-    logickatab = tab_symbolov(rpn)
+    logickatab = tabulka_symbolov(rpn)
     # Okrem toho rpn -> refrpn
+
     for lex in rpn:
-        if lex[0] == ODKAZ:
-            var.append(lex[1])
-        if lex[0] == OPERATOR:
-            if lex[1] == '~':
-                c = v_not(logickatab[var.pop()][1])
+        if lex.typ == ODKAZ:
+            var.append(lex.lexem)
 
-            elif lex[1] == '&':
-                c = v_and(logickatab[var.pop()][1], logickatab[var.pop()][1])
+        elif lex.typ == OPERATOR:
+            op2 = logickatab[var.pop()].vektor
+            if lex.lexem == NOT:
+                c = v_not(op2)
+            else:
+                op1 = logickatab[var.pop()].vektor
+                if lex.lexem == AND:
+                    c = v_and(op1, op2)
 
-            elif lex[1] == '|':
-                print(var[-1], var[-2])
-                c = v_or(logickatab[var.pop()][1], logickatab[var.pop()][1])
+                elif lex.lexem == OR:
+                    c = v_or(op1, op2)
 
-            elif lex[1] == '=>':
-                op1 = var.pop()
-                c = v_impl(logickatab[var.pop()][1], logickatab[op1][1])
+                elif lex.lexem == IMPL:
+                    c = v_impl(op1, op2)
 
-            elif lex[1] == '<=>':
-                c = v_ekviv(logickatab[var.pop()][1], logickatab[var.pop()][1])
+                elif lex.lexem == EKV:
+                    c = v_ekv(op1, op2)
 
             var.append(len(logickatab))
-            logickatab.append([len(logickatab), c])
+            logickatab.append(TabStlpec(len(logickatab), c))
+
     return logickatab
+
 
 def vytlac_stlpce(logtab):
     for i in logtab:
-        print('|{:^10.10}'.format(str(i[0])), end="")
-    print('|\n' + '-' * (12 * len(logtab)))
+        print('|{:^10.10}'.format(str(i.nadpis)), end="")
+    print('|\n' + '-' * (11 * len(logtab)))
 
-    for s in range(len(logtab[0][1])):
+    for s in range(len(logtab[0].vektor)):
         for r in range(len(logtab)):
-            print('|{:^10.10}'.format(str(int(logtab[r][1][s]))), end="")
+            print('|{:^10.10}'.format(str(int(logtab[r].vektor[s]))), end="")
         print('|')
 
 
-vstup = input('> ')
-rpn = shunting_yard(vstup)
-print(rpn)
-# print()
-# t = tab_symbolov(rpn)
-# print(t)
-# print()
-# print(rpn)
-#print(t[0][1], t[1][1])
-#print(v_and(t[0][1], t[1][1]))
-#print(v_or(t[0][1], t[1][1]))
-#print(v_impl(t[0][1], t[1][1]))
-#print(v_ekviv(t[0][1], t[1][1]))
-#print(v_not(t[0][1]))
-vytlac_stlpce(vyries_logiku(rpn))
+if __name__ == '__main__':
+    vstup = input('> ')
+    rpn = shunting_yard(vstup)
+    vytlac_stlpce(vyries_logiku(rpn))
