@@ -66,7 +66,7 @@ def shunting_yard(vyraz):
     for token in token_nacitaj(vstup):
         if token.typ == PREMENNA:
             fronta.append(token)
-            if posledny(opzasobnik) == NOT:
+            while posledny(opzasobnik) == NOT:
                 fronta.append(opzasobnik.pop())
 
         elif token.typ == OPERATOR:
