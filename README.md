@@ -1,4 +1,4 @@
-#Math In Code
+# Math In Code
 Couple of demonstrations for showing common mathematical concepts in action, in the context of computer programs.
 
 ## Want to contribute?
@@ -6,10 +6,10 @@ If you find the bug or want to fix something in the project involve via submitin
 
 ## Logic Tables
 
-###How it came about?
+### How it came about?
 When I was solving long and tidious excerices involving completing large logic tables in my math class, I knew there must be a better way. Motivation was to create automatic script to help me check whether I came up with right solution.
 
-###How it is implemented?
+### How it is implemented?
 Overview of general functionality is included within the project folder. However, it is written in Slovak language, so here is the summary of the document.
 
 1.  **Notation** - valid and properly parenthesized logical expression must be converted to available key symbols. Valid is e.g.: `~(A & B) => (C | D)`
@@ -20,12 +20,12 @@ Overview of general functionality is included within the project folder. However
 ### How to run it?
 Download `logic_tables.py` and run it with python3 interpreter. No external dependencies are required.
 
-##Matrices
+## Matrices
 
-###How it came about?
+### How it came about?
 Vectors feel to a lot of students like a foreign topic with no real aplication. Manipulating with those arrows in space is even stranger. Motivation was to write basic readable code containing linear transformations for 3D graphics beginners, who want to see the details.
 
-###How it is implemented?
+### How it is implemented?
 Presentation slides (`Vektory.pdf`) describe the basic ideas and concepts to further understand the code. Main workhorses of the program are *Simple DirectMedia Library 2* (draw to screen, handle events) and a function *transform()*, which does matrix-vector multiply to apply matrix to every vetrex in the scene.
 
 You can run (result is dependent on origin's poistion):
@@ -54,30 +54,30 @@ $ ./program
 ```
 
 ## MyGithubAvatar
-###How it came about?
+### How it came about?
 Originally meant to be part of gui project, to demonstate different ways of manipulating with objects mathematically. When testing classes nice complex and yet simple image was created. After I joined github it became my avatar and this code was left as a reminder of how it was all done.
 
-###How it is implemented?
+### How it is implemented?
 Main generator is in `graphobjects.py` along side with classes, which carries the drawing procedures. Final image `logo-koch.png` containes Koch snowflake with two Roses and a fractal tree inside a lissajous curve flower pot.
 
 ### How to run it?
 You would ever want to use it only as a library for your own pictures. Be noted, API is not as polished as I have wished it to be, so some operations may be very clunky.
 
-####Dependencies
+#### Dependencies
 You have to install Pillow image library:
 ```zsh
 $ pip3 install pillow
 ```
-####Usage
+#### Usage
 Then copy `vector.py` and `graphobjects.py` to your project directory. After that simply include and use:
 ```python
 import graphobjects as go
 
 with go.MathLogo(Image.new('RGB', IMG_SIZE), 'image.png') as ico:
-    center = (IMG_SIZE[0] / 2, IMG_SIZE[1] / 2)
-    ico.rectangle((0, 0, IMG_SIZE[0], IMG_SIZE[1]), fill=(235, 235, 235))
+    center = (600 / 2, 600 / 2)
+    ico.rectangle((0, 0, 300, 300), fill=(235, 235, 235))
     go.KochFractal(ico, lwidth=LINE_WIDTH, color=(33, 145, 237)).snowflake(*center, 220)
 ```
 
-####TODO
+#### TODO
 Create installable package
